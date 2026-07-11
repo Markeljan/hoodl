@@ -21,7 +21,18 @@ contract Deploy is Script {
     address constant NVDA_FEED = 0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15;
     address constant TSLA_FEED = 0x4A1166a659A55625345e9515b32adECea5547C38;
     uint256 constant FEED_STALENESS = 3 days; // stock feeds are 24/5 — span weekends
-    uint16 constant MINT_FEE_BPS = 10; // 0.10% on mint; redemption always free
+
+    // Protocol fees (snapshotted into each index at creation; hard cap 100 bps each side).
+    uint16 constant MINT_FEE_BPS = 30; // 0.30% on mint
+    uint16 constant REDEEM_FEE_BPS = 10; // 0.10% on redeem — charged in shares; exits never gated
+    // Flagship creator fees (we are the creator of hAI). Total: 0.50% in / 0.20% out —
+    // still a fraction of HoodETF's 0.3–2% entry + 3%/yr management.
+    uint16 constant HAI_CREATOR_MINT_BPS = 20;
+    uint16 constant HAI_CREATOR_REDEEM_BPS = 10;
+
+    // 256x256 rounded-square "hAI" mark, fully on-chain (base64 SVG data URI).
+    string constant HAI_IMAGE =
+        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgcng9IjUyIiBmaWxsPSIjMGIwZTFhIi8+PHRleHQgeD0iMTI4IiB5PSIxMjIiIGZvbnQtZmFtaWx5PSJNZW5sbyxtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjN2NmZmIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5oQUk8L3RleHQ+PHRleHQgeD0iMTI4IiB5PSIxNjgiIGZvbnQtZmFtaWx5PSJNZW5sbyxtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM4YTkzYWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkhPT0RMIElOREVYPC90ZXh0Pjwvc3ZnPg==";
 
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
@@ -29,8 +40,8 @@ contract Deploy is Script {
         address treasury = vm.envOr("TREASURY", deployer);
         vm.startBroadcast(pk);
 
-        // ── core: permissionless issuance, one capped fee ──
-        IndexFactory factory = new IndexFactory(deployer, treasury, MINT_FEE_BPS);
+        // ── core: permissionless issuance, capped protocol fees both sides ──
+        IndexFactory factory = new IndexFactory(deployer, treasury, MINT_FEE_BPS, REDEEM_FEE_BPS);
 
         // ── periphery: NAV lens (display + integrations only) ──
         IndexLens lens = new IndexLens(RHChain.STATE_VIEW, RHChain.USDG, deployer);
@@ -71,7 +82,18 @@ contract Deploy is Script {
         units[1] = 25e15;
         tokens[2] = RHChain.CASHCAT;
         units[2] = 60e18;
-        address index = factory.createIndex("HOODL AI Index", "hAI", tokens, units);
+        address index = factory.createIndex(
+            IndexFactory.IndexParams({
+                name: "HOODL AI Index",
+                symbol: "hAI",
+                tokens: tokens,
+                units: units,
+                creatorMintFeeBps: HAI_CREATOR_MINT_BPS,
+                creatorRedeemFeeBps: HAI_CREATOR_REDEEM_BPS,
+                description: "The AI trade across both asset classes: NVDA + TSLA stock tokens and CASHCAT, one ERC-20. Mint and redeem in-kind, permissionlessly, forever.",
+                imageURI: HAI_IMAGE
+            })
+        );
 
         vm.stopBroadcast();
         console2.log("IndexFactory:", address(factory));

@@ -32,7 +32,7 @@ contract IndexForkTest is Test {
         forkOk = true;
         vm.createSelectFork("rh_mainnet");
 
-        factory = new IndexFactory(address(this), address(this), 10); // treasury = this
+        factory = new IndexFactory(address(this), address(this), 10, 0); // treasury = this
 
         address[] memory t = new address[](3);
         uint256[] memory u = new uint256[](3);

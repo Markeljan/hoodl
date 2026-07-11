@@ -115,7 +115,7 @@ contract IndexLensTest is Test {
         // sqrtP = Q96 >> 20  =>  ratio = 2^-40 exactly (power of two keeps assertions exact)
         sv.setSlot0(poolId, uint160(FixedPoint96.Q96 >> 20));
 
-        IndexFactory factory = new IndexFactory(address(this), address(0xCAFE), 10);
+        IndexFactory factory = new IndexFactory(address(this), address(0xCAFE), 10, 0);
         address[] memory t = new address[](2);
         uint256[] memory u = new uint256[](2);
         t[0] = address(stock);

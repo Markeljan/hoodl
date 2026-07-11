@@ -69,7 +69,7 @@ contract IndexZap is Ownable, ReentrancyGuard, SafeCallback {
 
     /// @notice Buy `grossShares` of `index` with USDG in one tx. Pulls up to `maxUsdgIn`, buys the
     ///         exact component amounts on v4, mints in-kind, refunds the unspent USDG.
-    /// @return sharesOut shares received (grossShares minus the index's mint fee)
+    /// @return sharesOut shares received (grossShares minus the index's protocol + creator mint fees)
     /// @return usdgSpent total USDG consumed (swaps + any USDG cash leg)
     function zapMint(IndexToken index, uint256 grossShares, uint256 maxUsdgIn)
         external

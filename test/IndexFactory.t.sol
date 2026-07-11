@@ -17,38 +17,65 @@ contract IndexFactoryTest is Test {
     function setUp() public {
         tokenA = new MockERC20("A", "A", 18);
         tokenB = new MockERC20("B", "B", 18);
-        factory = new IndexFactory(address(this), treasury, 10);
+        factory = new IndexFactory(address(this), treasury, 10, 5);
     }
 
-    function _create() internal returns (IndexToken) {
-        address[] memory t = new address[](2);
-        uint256[] memory u = new uint256[](2);
+    function _components() internal view returns (address[] memory t, uint256[] memory u) {
+        t = new address[](2);
+        u = new uint256[](2);
         t[0] = address(tokenA);
         u[0] = 1e18;
         t[1] = address(tokenB);
         u[1] = 2e18;
+    }
+
+    function _create() internal returns (IndexToken) {
+        (address[] memory t, uint256[] memory u) = _components();
         return IndexToken(factory.createIndex("Idx", "IDX", t, u));
+    }
+
+    function _createFull(uint16 cMint, uint16 cRedeem) internal returns (IndexToken) {
+        (address[] memory t, uint256[] memory u) = _components();
+        return IndexToken(
+            factory.createIndex(
+                IndexFactory.IndexParams({
+                    name: "Idx",
+                    symbol: "IDX",
+                    tokens: t,
+                    units: u,
+                    creatorMintFeeBps: cMint,
+                    creatorRedeemFeeBps: cRedeem,
+                    description: "two-token test index",
+                    imageURI: "ipfs://img"
+                })
+            )
+        );
     }
 
     // ── constructor ──
 
     function test_constructor_validations() public {
         vm.expectRevert(IndexFactory.ZeroAddress.selector);
-        new IndexFactory(address(this), address(0), 10);
+        new IndexFactory(address(this), address(0), 10, 0);
         vm.expectRevert(IndexFactory.FeeTooHigh.selector);
-        new IndexFactory(address(this), treasury, 51);
+        new IndexFactory(address(this), treasury, 101, 0);
+        vm.expectRevert(IndexFactory.FeeTooHigh.selector);
+        new IndexFactory(address(this), treasury, 0, 101);
     }
 
     // ── admin ──
 
-    function test_setMintFee_capAndAuth() public {
-        factory.setMintFeeBps(50); // at cap: ok
-        assertEq(factory.mintFeeBps(), 50);
+    function test_setProtocolFees_capAndAuth() public {
+        factory.setProtocolFees(100, 100); // at cap: ok
+        assertEq(factory.mintFeeBps(), 100);
+        assertEq(factory.redeemFeeBps(), 100);
         vm.expectRevert(IndexFactory.FeeTooHigh.selector);
-        factory.setMintFeeBps(51);
+        factory.setProtocolFees(101, 0);
+        vm.expectRevert(IndexFactory.FeeTooHigh.selector);
+        factory.setProtocolFees(0, 101);
         vm.prank(alice);
         vm.expectRevert();
-        factory.setMintFeeBps(5);
+        factory.setProtocolFees(5, 5);
     }
 
     function test_setTreasury_auth() public {
@@ -64,16 +91,65 @@ contract IndexFactoryTest is Test {
     // ── fee snapshot: existing indexes can never be repriced ──
 
     function test_feeSnapshotPerIndex() public {
-        IndexToken a = _create(); // snapshots 10
-        factory.setMintFeeBps(25);
-        IndexToken b = _create(); // snapshots 25
-        assertEq(a.mintFeeBps(), 10, "existing index keeps its fee forever");
-        assertEq(b.mintFeeBps(), 25, "new index gets the new fee");
+        IndexToken a = _create(); // snapshots 10/5
+        factory.setProtocolFees(25, 15);
+        IndexToken b = _create(); // snapshots 25/15
+        assertEq(a.protocolMintFeeBps(), 10, "existing index keeps its fees forever");
+        assertEq(a.protocolRedeemFeeBps(), 5);
+        assertEq(b.protocolMintFeeBps(), 25, "new index gets the new fees");
+        assertEq(b.protocolRedeemFeeBps(), 15);
+    }
+
+    // ── creator fees + metadata plumb through createIndex ──
+
+    function test_createIndex_fullParams() public {
+        vm.prank(alice);
+        IndexToken idx = _createFull(30, 20);
+        assertEq(idx.creator(), alice, "caller becomes creator");
+        assertEq(idx.creatorMintFeeBps(), 30);
+        assertEq(idx.creatorRedeemFeeBps(), 20);
+        assertEq(idx.protocolMintFeeBps(), 10);
+        assertEq(idx.protocolRedeemFeeBps(), 5);
+        assertEq(idx.description(), "two-token test index");
+        assertEq(idx.imageURI(), "ipfs://img");
+    }
+
+    function test_createIndex_creatorFeeCap() public {
+        (address[] memory t, uint256[] memory u) = _components();
+        IndexFactory.IndexParams memory p = IndexFactory.IndexParams({
+            name: "Idx",
+            symbol: "IDX",
+            tokens: t,
+            units: u,
+            creatorMintFeeBps: 101,
+            creatorRedeemFeeBps: 0,
+            description: "",
+            imageURI: ""
+        });
+        vm.expectRevert(IndexFactory.FeeTooHigh.selector);
+        factory.createIndex(p);
+        p.creatorMintFeeBps = 0;
+        p.creatorRedeemFeeBps = 101;
+        vm.expectRevert(IndexFactory.FeeTooHigh.selector);
+        factory.createIndex(p);
+        p.creatorRedeemFeeBps = 100; // at cap: ok
+        assertTrue(factory.createIndex(p) != address(0));
+    }
+
+    function test_createIndex_legacyForm_zeroCreatorFees() public {
+        vm.prank(alice);
+        IndexToken idx = _create();
+        assertEq(idx.creator(), alice);
+        assertEq(idx.creatorMintFeeBps(), 0);
+        assertEq(idx.creatorRedeemFeeBps(), 0);
+        assertEq(idx.description(), "");
+        assertEq(idx.imageURI(), "");
     }
 
     // ── treasury is read live at mint time ──
 
     function test_treasuryLiveRead() public {
+        factory.setProtocolFees(10, 0); // isolate: mint fee only for exact assertions
         IndexToken idx = _create();
         tokenA.mint(alice, 1e30);
         tokenB.mint(alice, 1e30);

@@ -53,7 +53,7 @@ contract ZapSeedForkTest is Test {
         forkOk = true;
         vm.createSelectFork("rh_mainnet");
 
-        factory = new IndexFactory(address(this), address(this), 10);
+        factory = new IndexFactory(address(this), address(this), 10, 0);
         address[] memory t = new address[](3);
         uint256[] memory u = new uint256[](3);
         t[0] = RHChain.NVDA;

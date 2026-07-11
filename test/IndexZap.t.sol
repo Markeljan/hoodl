@@ -40,7 +40,7 @@ contract IndexZapTest is Test {
         cat.mint(address(pm), 1e30);
         usdg.mint(address(pm), 1e30);
 
-        factory = new IndexFactory(address(this), treasury, 10); // 10 bps
+        factory = new IndexFactory(address(this), treasury, 10, 0); // 10 bps mint, free redeem
         address[] memory t = new address[](3);
         uint256[] memory u = new uint256[](3);
         t[0] = address(nvda);
