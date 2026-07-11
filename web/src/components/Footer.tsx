@@ -1,18 +1,7 @@
 export default function Footer() {
   return (
     <footer style={{ borderTop: '1px solid var(--border)', marginTop: 20 }}>
-      <div
-        style={{
-          maxWidth: 1180,
-          margin: '0 auto',
-          padding: '30px 24px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 24,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+      <div className="footer-inner">
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <span
             style={{

@@ -21,11 +21,11 @@ interface PortfolioProps {
 
 export default function Portfolio(p: PortfolioProps) {
   return (
-    <main style={{ maxWidth: 1180, margin: '0 auto', padding: '44px 24px 40px' }}>
+    <main className="page">
       <h1 style={{ margin: '0 0 4px', font: "700 34px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>Your portfolio</h1>
       <p style={{ margin: '0 0 26px', fontSize: 15, color: 'var(--text-2)' }}>Everything here is redeemable in-kind, anytime — no market required.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 360px', gap: 22, alignItems: 'start' }}>
+      <div className="portfolio-grid">
         <div>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: 24, marginBottom: 18 }}>
             <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 500 }}>Total value</div>

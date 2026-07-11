@@ -51,8 +51,8 @@ const heroRows = [
 
 export default function Landing({ buyNow, exploreNow }: LandingProps) {
   return (
-    <main style={{ maxWidth: 1180, margin: '0 auto', padding: '64px 24px 40px' }}>
-      <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.08fr) minmax(0,.92fr)', gap: 52, alignItems: 'center' }}>
+    <main className="page page--landing">
+      <section className="hero-grid">
         <div>
           <div
             style={{
@@ -210,7 +210,7 @@ export default function Landing({ buyNow, exploreNow }: LandingProps) {
         <h2 style={{ font: "600 13px 'JetBrains Mono',monospace", letterSpacing: '.08em', color: 'var(--text-3)', textTransform: 'uppercase', margin: '0 0 22px' }}>
           Why it’s different
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(240px,100%),1fr))', gap: 16 }}>
           {highlightCards.map((c) => (
             <div key={c.title} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 22 }}>
               <div style={{ width: 30, height: 4, borderRadius: 99, background: 'var(--neon)', marginBottom: 16 }} />
@@ -226,7 +226,7 @@ export default function Landing({ buyNow, exploreNow }: LandingProps) {
         <h2 style={{ font: "600 13px 'JetBrains Mono',monospace", letterSpacing: '.08em', color: 'var(--text-3)', textTransform: 'uppercase', margin: '0 0 22px' }}>
           Three ways in — same token out
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(260px,100%),1fr))', gap: 16 }}>
           {waysIn.map((c) => (
             <div key={c.tag} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 16, padding: 22 }}>
               <span style={{ font: "600 13px 'JetBrains Mono',monospace", color: c.tagColor }}>{c.tag}</span>
@@ -239,6 +239,7 @@ export default function Landing({ buyNow, exploreNow }: LandingProps) {
 
       {/* cta band */}
       <section
+        className="cta-band"
         style={{
           marginTop: 56,
           display: 'flex',
@@ -249,7 +250,6 @@ export default function Landing({ buyNow, exploreNow }: LandingProps) {
           background: 'var(--surface)',
           border: '1px solid var(--border)',
           borderRadius: 20,
-          padding: '30px 34px',
         }}
       >
         <div>

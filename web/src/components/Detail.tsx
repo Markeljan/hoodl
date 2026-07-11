@@ -118,7 +118,7 @@ export default function Detail(p: DetailProps) {
   const { sel, tab } = p
   const tabs: Tab[] = ['buy', 'mint', 'redeem']
   return (
-    <main style={{ maxWidth: 1180, margin: '0 auto', padding: '26px 24px 40px' }}>
+    <main className="page page--detail">
       <button
         onClick={p.goDiscover}
         className="hv-text"
@@ -169,13 +169,13 @@ export default function Detail(p: DetailProps) {
             ))}
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div className="detail-price">
           <div style={{ font: "700 40px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>{sel.navLabel}</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+          <div className="detail-price-row">
             <span style={{ font: "600 15px 'Space Grotesk',sans-serif", color: sel.chgColor }}>{sel.changeLabel}</span>
             <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>24h</span>
           </div>
-          <div style={{ display: 'flex', gap: 7, justifyContent: 'flex-end', marginTop: 12 }}>
+          <div className="detail-price-pills">
             <span
               style={{
                 display: 'inline-flex',
@@ -227,7 +227,7 @@ export default function Detail(p: DetailProps) {
       </div>
 
       {/* two column */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 388px', gap: 22, marginTop: 22, alignItems: 'start' }}>
+      <div className="detail-grid" style={{ marginTop: 22 }}>
         {/* composition */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -249,7 +249,9 @@ export default function Detail(p: DetailProps) {
             }}
           >
             <span>Asset</span>
-            <span style={{ textAlign: 'right' }}>Price</span>
+            <span className="comp-price" style={{ textAlign: 'right' }}>
+              Price
+            </span>
             <span style={{ textAlign: 'right' }}>Value / share</span>
           </div>
           {sel.rows.map((r) => (
@@ -266,7 +268,7 @@ export default function Detail(p: DetailProps) {
                     </div>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>{r.priceLabel}</div>
+                <div className="comp-price" style={{ textAlign: 'right', font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>{r.priceLabel}</div>
                 <div style={{ textAlign: 'right', font: "600 14.5px 'Space Grotesk',sans-serif", color: 'var(--text)' }}>{r.valueLabel}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 9 }}>
@@ -282,7 +284,7 @@ export default function Detail(p: DetailProps) {
             <h3 style={{ margin: '0 0 10px', font: "600 13px 'JetBrains Mono',monospace", letterSpacing: '.05em', color: 'var(--text-3)', textTransform: 'uppercase' }}>
               The share is money
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+            <div className="money-grid">
               <MoneyButton title="Transfer" sub="Send like any ERC-20" onClick={p.onMoney} />
               <MoneyButton title="Provide liquidity" sub="LP the v4 pool" onClick={p.onMoney} />
               <MoneyButton title="Collateralize" sub="Post in lending markets" onClick={p.onMoney} />
@@ -292,9 +294,8 @@ export default function Detail(p: DetailProps) {
 
         {/* trade panel */}
         <div
+          className="trade-panel"
           style={{
-            position: 'sticky',
-            top: 80,
             background: 'var(--surface)',
             border: '1px solid var(--border)',
             borderRadius: 18,

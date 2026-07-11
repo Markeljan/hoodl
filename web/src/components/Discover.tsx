@@ -7,7 +7,7 @@ interface DiscoverProps {
 
 export default function Discover({ indexes, openDetail }: DiscoverProps) {
   return (
-    <main style={{ maxWidth: 1180, margin: '0 auto', padding: '44px 24px 40px' }}>
+    <main className="page">
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 26 }}>
         <div>
           <h1 style={{ margin: 0, font: "700 34px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>Discover indexes</h1>
@@ -20,7 +20,7 @@ export default function Discover({ indexes, openDetail }: DiscoverProps) {
           {indexes.length} indexes live
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(280px,100%),1fr))', gap: 18 }}>
         {indexes.map((ix) => (
           <button
             key={ix.id}

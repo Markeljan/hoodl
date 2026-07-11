@@ -132,3 +132,162 @@ input::placeholder {
 .hv-ticker:hover {
   animation-play-state: paused;
 }
+
+/* ---------- responsive layout ---------- */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 44px 24px 40px;
+}
+.page--landing {
+  padding-top: 64px;
+}
+.page--detail {
+  padding-top: 26px;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 13px 24px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-chain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 52px;
+  align-items: center;
+}
+.cta-band {
+  padding: 30px 34px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 388px;
+  gap: 22px;
+  align-items: start;
+}
+.trade-panel {
+  position: sticky;
+  top: 80px;
+}
+.detail-price {
+  text-align: right;
+}
+.detail-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.detail-price-pills {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 12px;
+}
+.money-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+}
+
+.footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (max-width: 1020px) {
+  .detail-grid,
+  .portfolio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .trade-panel {
+    position: static;
+  }
+}
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+  .nav-chain {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .page {
+    padding: 36px 16px 32px;
+  }
+  .page--detail {
+    padding-top: 20px;
+  }
+  .site-header {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding: 10px 16px;
+  }
+  .nav-links {
+    order: 3;
+    width: 100%;
+    margin-left: -12px;
+  }
+  .nav-theme-label {
+    display: none;
+  }
+  .cta-band {
+    padding: 24px 20px;
+  }
+  .money-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-price {
+    text-align: left;
+  }
+  .detail-price-row,
+  .detail-price-pills {
+    justify-content: flex-start;
+  }
+  .footer-inner {
+    padding: 24px 16px;
+  }
+}
+@media (max-width: 480px) {
+  .comp-price {
+    display: none;
+  }
+}

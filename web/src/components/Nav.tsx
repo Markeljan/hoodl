@@ -18,14 +18,11 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
   ]
   return (
     <header
+      className="site-header"
       style={{
         position: 'sticky',
         top: 0,
         zIndex: 60,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 22,
-        padding: '13px 24px',
         background: 'color-mix(in srgb,var(--canvas) 84%,transparent)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -50,7 +47,7 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
         </span>
         <span style={{ font: "700 20px/1 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>HOODL</span>
       </button>
-      <nav style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
+      <nav className="nav-links">
         {items.map((item) => (
           <button
             key={item.key}
@@ -72,8 +69,8 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
           </button>
         ))}
       </nav>
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', border: '1px solid var(--border)', borderRadius: 99, background: 'var(--surface)' }}>
+      <div className="nav-actions">
+        <div className="nav-chain" style={{ border: '1px solid var(--border)', borderRadius: 99, background: 'var(--surface)' }}>
           <span style={{ width: 8, height: 8, borderRadius: 99, background: 'var(--neon)', animation: 'hoodl-pulse 2.4s ease-in-out infinite' }} />
           <span style={{ fontSize: 12.5, color: 'var(--text-2)', fontWeight: 500 }}>Robinhood Chain</span>
           <span style={{ font: "500 11px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>4663</span>
@@ -101,7 +98,7 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
             <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
             <path d="M8 1.6 A6.4 6.4 0 0 0 8 14.4 Z" fill="currentColor" />
           </svg>
-          {themeLabel}
+          <span className="nav-theme-label">{themeLabel}</span>
         </button>
         <button
           onClick={onConnect}
