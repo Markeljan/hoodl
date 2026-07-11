@@ -1,0 +1,134 @@
+:root {
+  --canvas: #131009;
+  --surface: #1e1a0f;
+  --surface-2: #272115;
+  --surface-3: #312817;
+  --border: rgba(210, 206, 199, 0.12);
+  --border-strong: rgba(210, 206, 199, 0.22);
+  --text: #ffffff;
+  --text-2: #d2cec7;
+  --text-3: #898681;
+  --neon: #ccff00;
+  --neon-dim: rgba(204, 255, 0, 0.14);
+  --neon-line: rgba(204, 255, 0, 0.34);
+  --on-neon: #1e1a0f;
+  --pos: #ccff00;
+  --neg: #ff8064;
+  --link: #ccff00;
+  --shadow: 0 18px 44px -22px rgba(0, 0, 0, 0.8);
+}
+[data-theme='light'] {
+  --canvas: #f1efe9;
+  --surface: #ffffff;
+  --surface-2: #f7f5f0;
+  --surface-3: #eeece4;
+  --border: rgba(30, 26, 15, 0.1);
+  --border-strong: rgba(30, 26, 15, 0.18);
+  --text: #1e1a0f;
+  --text-2: #55514a;
+  --text-3: #898681;
+  --neon: #ccff00;
+  --neon-dim: rgba(160, 200, 0, 0.2);
+  --neon-line: rgba(120, 150, 0, 0.5);
+  --on-neon: #1e1a0f;
+  --pos: #3e5c00;
+  --neg: #c0341d;
+  --link: #41600a;
+  --shadow: 0 18px 40px -24px rgba(30, 26, 15, 0.35);
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: Manrope, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--text);
+}
+input::placeholder {
+  color: var(--text-3);
+}
+::selection {
+  background: var(--neon);
+  color: var(--on-neon);
+}
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 3px solid var(--canvas);
+}
+@keyframes hoodl-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes hoodl-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@keyframes hoodl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* hover states (design `style-hover` attributes) */
+.hv-text:hover {
+  color: var(--text) !important;
+}
+.hv-chip:hover {
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+.hv-connect:hover {
+  background: var(--neon) !important;
+  color: var(--on-neon) !important;
+}
+.hv-lift:hover {
+  transform: translateY(-2px);
+}
+.hv-lift-sm:hover {
+  transform: translateY(-1px);
+}
+.hv-ghost:hover {
+  background: var(--surface-2) !important;
+}
+.hv-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong) !important;
+}
+.hv-border:hover {
+  border-color: var(--border-strong) !important;
+}
+.hv-ticker:hover {
+  animation-play-state: paused;
+}
