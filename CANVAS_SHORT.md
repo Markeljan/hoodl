@@ -3,31 +3,24 @@
 **Team Name:** HOODL
 
 **One line: What You're Building**
-social HODLing on Robinhood Chain — one token buys a whole portfolio of tokenized stocks and memecoins, trader fees reward the long-term holders, and a manager (human or AI) can trade the portfolio but never withdraw it.
+permissionless index tokens on Robinhood Chain — one ERC-20 wraps a fixed basket of tokenized stocks + crypto, minted and redeemed in-kind, with no manager and nothing to trust.
+
+**The Three Unlocks**
+1. **Permissionless issuance** — anyone creates an index of any ERC-20s in one tx: no fund wrapper, no authorized-participant status, no allowlist. Cross-asset is the killer instance: no vehicle on earth holds NVDA and a memecoin in one ticker.
+2. **Self-maintaining** — units are fixed and composition is immutable: no rebalancing, no keeper, no oracle, no admin. Anyone is the AP — when the token trades away from NAV, in-kind mint/redeem arbitrage pulls it back. Exit never needs a market: redemption works even if every DEX pool is empty.
+3. **The index is money** — each index is a standard ERC-20 with verifiable holdings: transfer it, LP it, post it as collateral, build on it.
 
 **Alternatives and Gaps**
-Robindex ships stock-only index tokens behind a 25k-token stake gate; HoodFunds ships solo memecoin portfolios. neither mixes stocks + memes, pays holders a fee share, runs as a social group, or offers an AI manager. Enzyme and dHEDGE have manager vaults but aren't on Robinhood Chain and target pros, not retail friends.
-
-**Who is This For**
-Robinhood Chain traders who want diversified stock or token exposure without hand-picking, long-term holders who want to be *paid* for holding, and creators — from friend-group organizers to finfluencers — who earn fees for running clubs others buy into.
-
-**What They Do Today**
-swap stock tokens and memecoins one at a time, coordinate group buys over Telegram with no shared custody, rebalance by hand — or sit out entirely because the crypto UX is unfamiliar.
+Robindex ships immutable stock-only indices behind a stake gate, keeper-rebalanced, no in-kind exit. HoodFunds ships solo memecoin portfolios. ETFs can't hold memecoins; crypto index products can't hold stocks; nobody issues permissionlessly.
 
 **Why Onchain, Why Robinhood Chain**
-group money needs trustless custody — a contract, not a group-chat treasurer. the manager trades the portfolio but can never withdraw it: there is no rug function. Robinhood Chain co-locates 95 tokenized stocks as composable ERC-20s, live DEX liquidity, and the funnel from ~28M funded Robinhood accounts — the memestock crowd is already here.
+an index here needs no fund plumbing — the contract is the custodian and arbitrage is the workforce. Robinhood Chain is the only venue where tokenized equities and memecoins coexist as composable ERC-20s, with Chainlink equity feeds and Uniswap v4 for the NAV lens.
 
-**The Wedge**
-a flagship mixed club at launch: buy the club token and the contract allocates across tokenized stocks + a memecoin; sell back anytime. a 1% entry/exit fee splits 50% to the manager, 40% into the club — held in the vault, minted to no one, so traders mechanically pay the hodlers — and 10% to the protocol. because custody is untouchable, a club can hand the manager seat to an AI agent: same allowlist, same rate limits, same missing rug function.
-
-**Why Now**
-Robinhood Chain mainnet launched July 1, 2026 — $570M day-one DEX volume, TVL past $240M in week one, and tokenized stocks finally composable by contracts. the products live today are passive and solo; the social + holder-reward + safe-AI-manager layer is unclaimed.
-
-**First 5-10 Users**
-friends who trade Robinhood and memestocks, crypto trader mutuals, one or two finfluencer mutuals to seed the creator flywheel, plus my openclaw agents and developer friends' agents.
+**Business Model**
+one fee: 0.10% on mint, in fully-backed index shares (zero dilution), snapshotted per index; redemption always free. ETFs charge 3–95 bps yearly — we take 10 bps once.
 
 **Ship This Weekend**
-deploy the club contracts on Robinhood Chain with one flagship mixed club (stock tokens + a memecoin). demo live: a user buys in and sells out from the UI, the human manager rebalances, then the club flips on its AI manager, which executes a bounded rebalance from a plain-English strategy — and a bad agent trade reverts onchain, live.
+IndexFactory + IndexToken + NAV lens, deployed to testnet with a mainnet existence proof. demo: create the "AI Index" (NVDA + TSLA + CASHCAT), mint in-kind, transfer, redeem back to the underlying, live NAV from Chainlink + v4. already validated on a mainnet fork: exact in-kind lifecycle, NAV $32.62/share.
 
 ---
 *hoodl.finance · Arbitrum · Open House London · 2026 — deployed on Robinhood Chain*

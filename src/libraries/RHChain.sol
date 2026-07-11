@@ -3,7 +3,7 @@ pragma solidity 0.8.26;
 
 /// @title RHChain — verified Robinhood Chain mainnet (chainId 4663) addresses
 /// @notice Constants only. Chainlink price-feed addresses are intentionally NOT here — they are
-///         registered per-token in BasketFactory (pull them live from
+///         configured per-token in the periphery IndexLens (pull them live from
 ///         https://docs.chain.link/data-feeds/price-feeds/addresses?network=robinhood).
 /// @dev    Every address below is EIP-55 checksummed; `forge build` fails on a bad checksum,
 ///         so compiling this file is itself a validation pass. Sources: docs.robinhood.com/chain/contracts,

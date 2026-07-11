@@ -1,74 +1,47 @@
-# HOODL — a HODL basket game on Robinhood Chain
+# HOODL — permissionless index tokens on Robinhood Chain
 
-Create a **basket** of tokenized stocks + memecoins with target weights and a **hodl-till date**. Anyone buys in with **USDG**; the basket swaps into the underlying and mints shares. Buy-in and early exit charge a small fee — and **most of every fee goes to the participants who keep holding**, claimable only after the hodl-till date. Bail early and you **forfeit** your accrued reward *and* pay the exit fee, both redistributed to the diamond-hands who stay. It's a HODL game wrapped around a real on-chain portfolio.
+One ERC-20 that **is** a basket of tokenized stocks + crypto. Anyone creates an index; anyone mints it by depositing the exact basket **in-kind**; anyone redeems it back to the underlying, always, with no market required. No manager, no keeper, no oracle, no rebalancing — and the share is a standard ERC-20 you can transfer, LP, or post as collateral.
 
-Built for Robinhood Chain (mainnet 4663 / testnet 46630) with Foundry, Uniswap v4, and Chainlink.
+Built with Foundry for Robinhood Chain (mainnet 4663 / testnet 46630) — the only chain where tokenized equities (NVDA, TSLA, …) and memecoins coexist as composable ERC-20s.
 
-## How it works
+## The three unlocks
 
-- **`BasketFactory`** (singleton) — a protocol-owned registry of allowed tokens (each with its price source + token/USDG pool) that deploys baskets.
-- **`Basket`** (one per basket) — custodies the tokens, swaps **USDG↔token directly on Uniswap v4** (one hop; the liquid pools on this chain are token/USDG), prices holdings via **Chainlink** (stocks) or **token/USDG pool spot** (memecoins), and runs a MasterChef-style **USDG reward pool** that pays holders the fee flow and locks claims until `hodlTill`.
+1. **Permissionless issuance** — `createIndex(name, symbol, tokens[], units[])`. No fund wrapper, no AP status, no allowlist. Cross-asset by construction: no legal vehicle anywhere holds NVDA and a memecoin in one ticker.
+2. **Self-maintaining** — units per share are fixed and composition is immutable, so USD weights float exactly like a held portfolio (cap-weight behavior): there is *nothing to manage*. Peg to NAV is held by open arbitrage — anyone can mint/redeem in-kind, so everyone is the authorized participant. Corporate actions are a no-op: ERC-8056 stock tokens keep raw balances constant through splits, and Chainlink feeds are multiplier-adjusted.
+3. **The index is money** — a standard ERC-20 with onchain-verifiable holdings. Redemption is exact, deterministic, and needs zero DEX liquidity (thin stock pools are irrelevant to solvency).
 
-Default economics: **1% entry / 1% exit**, split **80% holders / 10% creator / 10% protocol**. Rebalancing is admin-triggered. Shares are a non-transferable internal ledger.
-
-See [`CONTRACTS_SPEC.md`](CONTRACTS_SPEC.md) for the full spec, flows, and math.
-
-## Layout
+## Architecture
 
 ```
 src/
-  BasketFactory.sol      registry + createBasket
-  Basket.sol             the vault (deposit/withdraw/claim/rebalance + v4 unlock callback)
-  BasketTypes.sol        PriceSource / TokenConfig / GlobalConfig / FeeConfig
-  libraries/
-    PriceLib.sol         USDG valuation, Chainlink staleness + sequencer guard
-    RHChain.sol          verified Robinhood Chain addresses (checksum-validated at compile)
-  interfaces/            IAggregatorV3, IStateView, IBasketFactory
-test/
-  PriceLib.t.sol, BasketFactory.t.sol, BasketAccounting.t.sol   37 offline unit tests
-  BasketFork.t.sol       live mainnet-fork integration test (gated)
-  mocks/                 MockERC20, MockAggregator, MockPoolManager (reproduces v4 flash accounting)
-script/Deploy.s.sol      deploys the factory + flagship basket (verified feeds + pools)
+  IndexFactory.sol        permissionless issuance + the protocol's single fee knob
+  IndexToken.sol          the index: ERC-20 + in-kind mint/redeem (no oracle, no DEX, no admin)
+  periphery/IndexLens.sol NAV in USDG for UIs/integrators (Chainlink stocks, v4 pool spot memecoins)
+  libraries/PriceLib.sol  decimals-agnostic valuation + feed staleness/sequencer guards (lens-only)
+  libraries/RHChain.sol   verified Robinhood Chain addresses (checksummed at compile)
+test/                     41 offline unit/fuzz tests + gated mainnet-fork lifecycle test
+script/Deploy.s.sol       factory + lens + flagship "HOODL AI Index" (NVDA + TSLA + CASHCAT)
 ```
+
+**Fee:** 0.10% on mint, paid in index shares to the treasury — fully backed by the minter's deposit (zero dilution), hard-capped at 0.5%, snapshotted per index at creation so existing indexes can never be repriced. **Redemption is always free.**
+
+**Rounding invariant:** deposits round up, redemptions round down ⇒ `balanceOf(component) ≥ units·totalSupply/1e18` always (fuzz-tested).
 
 ## Usage
 
 ```shell
-forge build          # compile (solc 0.8.26, evm cancun — v4 needs transient storage)
-forge test           # 37 offline unit tests (fork test auto-skips)
-forge fmt            # format
-```
-
-### Live mainnet-fork test
-
-Exercises a real deposit→withdraw against live Uniswap v4 liquidity on Robinhood Chain:
-
-```shell
-RH_FORK=1 forge test --match-path test/BasketFork.t.sol -vv
-```
-
-### Deploy
-
-```shell
+forge build          # solc 0.8.26
+forge test           # 41 offline tests (fork test auto-skips)
+RH_FORK=1 forge test --match-path test/IndexFork.t.sol -vv   # live mainnet-fork lifecycle
 PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
 ```
 
-RPC aliases (`rh_mainnet` / `rh_testnet`) are in [`foundry.toml`](foundry.toml). Set `SEQUENCER_FEED` in the script before a mainnet run.
+The fork test mints the AI Index from real NVDA + TSLA + CASHCAT fully in-kind (zero DEX interaction), transfers it, redeems it exactly, and reads a live NAV (**$32.62/share** at 2026-07-11 prices) from real Chainlink feeds + the real CASHCAT/USDG v4 pool.
 
 ## Verified addresses (mainnet 4663)
 
-Full list in [`src/libraries/RHChain.sol`](src/libraries/RHChain.sol). Key ones:
-
-| | Address |
-|---|---|
-| Uniswap v4 PoolManager | `0x8366a39CC670B4001A1121B8F6A443A643e40951` |
-| Uniswap v4 StateView | `0xF3334192D15450CdD385c8B70e03f9A6bD9E673b` |
-| USDG (Global Dollar, 6-dec) | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
-| NVDA / USD feed | `0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15` |
-| TSLA / USD feed | `0x4A1166a659A55625345e9515b32adECea5547C38` |
-
-Liquid token/USDG v4 pools (all hookless, PoolKeys hash to live poolIds): CASHCAT/USDG 0.5%, NVDA/USDG 1%, TSLA/USDG 0.3%.
+Full list in [`src/libraries/RHChain.sol`](src/libraries/RHChain.sol): USDG `0x5fc5…d168`, StateView `0xF333…673b`, NVDA/USD feed `0x379E…9F15`, TSLA/USD feed `0x4A11…7C38`, CASHCAT/USDG v4 pool (fee 5000, spacing 100, hookless — poolId hash-verified).
 
 ## Status
 
-Contracts implemented, unit-tested (37/37), and validated against live mainnet via the fork test. Deploy script ready; testnet broadcast pending.
+Contracts implemented and green: 41/41 offline tests + mainnet-fork lifecycle validated. Broadcast pending (needs a funded key).

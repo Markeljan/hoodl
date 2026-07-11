@@ -8,8 +8,8 @@ import {MockAggregator} from "./mocks/MockAggregator.sol";
 
 /// @dev External wrappers so library reverts surface as external calls (vm.expectRevert-catchable).
 contract PriceLibHarness {
-    function valueUsdg(uint256 b, uint256 p, uint8 d) external pure returns (uint256) {
-        return PriceLib.valueUsdg(b, p, d);
+    function valueUsdg(uint256 b, uint256 p, uint8 feedDec, uint8 tokenDec) external pure returns (uint256) {
+        return PriceLib.valueUsdg(b, p, feedDec, tokenDec);
     }
 
     function poolValueUsdg(uint256 b, uint160 sp, bool c0) external pure returns (uint256) {
@@ -34,19 +34,24 @@ contract PriceLibTest is Test {
         vm.warp(1_000_000);
     }
 
-    // ── valueUsdg: 18-dec token × 8-dec feed → 6-dec USDG ──
+    // ── valueUsdg: raw token × 8-dec feed → 6-dec USDG, decimals-agnostic ──
     function test_valueUsdg_oneTokenAt200() public view {
-        // 1.0 token @ $200 (feed 8-dec) → 200 USDG (6-dec)
-        assertEq(h.valueUsdg(1e18, 200e8, 8), 200e6);
+        // 1.0 of an 18-dec token @ $200 (feed 8-dec) → 200 USDG (6-dec)
+        assertEq(h.valueUsdg(1e18, 200e8, 8, 18), 200e6);
     }
 
     function test_valueUsdg_fractional() public view {
-        // 0.5 token @ $100 → 50 USDG
-        assertEq(h.valueUsdg(5e17, 100e8, 8), 50e6);
+        // 0.5 of an 18-dec token @ $100 → 50 USDG
+        assertEq(h.valueUsdg(5e17, 100e8, 8, 18), 50e6);
+    }
+
+    function test_valueUsdg_sixDecimalToken() public view {
+        // 3.0 of a 6-dec token @ $2 → 6 USDG
+        assertEq(h.valueUsdg(3e6, 2e8, 8, 6), 6e6);
     }
 
     function test_valueUsdg_zeroBalance() public view {
-        assertEq(h.valueUsdg(0, 200e8, 8), 0);
+        assertEq(h.valueUsdg(0, 200e8, 8, 18), 0);
     }
 
     // ── poolValueUsdg: raw×(currency1/currency0) ratio math from sqrtPriceX96 ──

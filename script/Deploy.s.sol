@@ -2,80 +2,75 @@
 pragma solidity 0.8.26;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {BasketFactory} from "../src/BasketFactory.sol";
+import {IndexFactory} from "../src/IndexFactory.sol";
+import {IndexLens} from "../src/periphery/IndexLens.sol";
 import {RHChain} from "../src/libraries/RHChain.sol";
-import {TokenConfig, GlobalConfig, FeeConfig, PriceSource} from "../src/BasketTypes.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
 
-/// @title Deploy — HOODL BasketFactory + flagship basket on Robinhood Chain (mainnet 4663)
-/// @notice All addresses/pools below are VERIFIED on-chain (2026-07-11): the PoolKeys hash exactly to
-///         the live poolIds, and the feed proxies come from Chainlink's robinhood feed directory.
-///         Every liquid v4 pool on this chain is token/USDG direct + hookless.
-///   • NVDA/USD feed  0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15
-///   • TSLA/USD feed  0x4A1166a659A55625345e9515b32adECea5547C38
-///   • CASHCAT/USDG   poolId 0xee0d95…4423 (fee 5000, ts 100)   token=currency0
-///   • NVDA/USDG      poolId 0x5e86db9a…b8ac (fee 10000, ts 200) token=currency1
-///   • TSLA/USDG      poolId 0x8517f807…d32e (fee 3000, ts 60)   token=currency0
-///   TODO before prod: set the L2 sequencer-uptime feed (left 0 = check skipped).
+/// @title Deploy — HOODL IndexFactory + IndexLens + flagship cross-asset index (Robinhood Chain)
+/// @notice Core needs zero external config (no oracle, no DEX). The lens configs below are
+///         on-chain-verified (2026-07-11): feed proxies from Chainlink's robinhood directory; the
+///         CASHCAT/USDG PoolKey hashes to the live poolId.
 ///
-/// Run (testnet): forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
+/// Run (testnet): PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
 contract Deploy is Script {
     address constant NVDA_FEED = 0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15;
     address constant TSLA_FEED = 0x4A1166a659A55625345e9515b32adECea5547C38;
-    address constant SEQUENCER_FEED = address(0); // TODO: set on mainnet
     uint256 constant FEED_STALENESS = 3 days; // stock feeds are 24/5 — span weekends
-
-    function _key(address c0, address c1, uint24 fee, int24 ts) internal pure returns (PoolKey memory) {
-        return PoolKey(Currency.wrap(c0), Currency.wrap(c1), fee, ts, IHooks(address(0)));
-    }
+    uint16 constant MINT_FEE_BPS = 10; // 0.10% on mint; redemption always free
 
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
-        address treasury = vm.envOr("TREASURY", vm.addr(pk));
+        address deployer = vm.addr(pk);
+        address treasury = vm.envOr("TREASURY", deployer);
         vm.startBroadcast(pk);
 
-        BasketFactory factory = new BasketFactory(RHChain.POOL_MANAGER, RHChain.USDG, vm.addr(pk));
+        // ── core: permissionless issuance, one capped fee ──
+        IndexFactory factory = new IndexFactory(deployer, treasury, MINT_FEE_BPS);
 
-        // CASHCAT: memecoin, priced from its USDG pool. token=currency0.
-        factory.setToken(
-            RHChain.CASHCAT,
-            TokenConfig(PriceSource.POOL_USDG, address(0), 0, _key(RHChain.CASHCAT, RHChain.USDG, 5000, 100), true)
-        );
-        // NVDA: Chainlink-priced. In its pool USDG=currency0, so token is currency1.
-        factory.setToken(
+        // ── periphery: NAV lens (display + integrations only) ──
+        IndexLens lens = new IndexLens(RHChain.STATE_VIEW, RHChain.USDG, deployer);
+        lens.setConfig(
             RHChain.NVDA,
-            TokenConfig(
-                PriceSource.CHAINLINK, NVDA_FEED, FEED_STALENESS, _key(RHChain.USDG, RHChain.NVDA, 10000, 200), false
-            )
+            IndexLens.PriceConfig(IndexLens.Source.CHAINLINK, NVDA_FEED, FEED_STALENESS, _emptyKey(), false)
         );
-        // TSLA: Chainlink-priced. token=currency0.
-        factory.setToken(
+        lens.setConfig(
             RHChain.TSLA,
-            TokenConfig(
-                PriceSource.CHAINLINK, TSLA_FEED, FEED_STALENESS, _key(RHChain.TSLA, RHChain.USDG, 3000, 60), true
+            IndexLens.PriceConfig(IndexLens.Source.CHAINLINK, TSLA_FEED, FEED_STALENESS, _emptyKey(), false)
+        );
+        lens.setConfig(
+            RHChain.CASHCAT,
+            IndexLens.PriceConfig(
+                IndexLens.Source.POOL_USDG,
+                address(0),
+                0,
+                PoolKey(Currency.wrap(RHChain.CASHCAT), Currency.wrap(RHChain.USDG), 5000, 100, IHooks(address(0))),
+                true
             )
         );
 
-        factory.setGlobal(GlobalConfig(RHChain.STATE_VIEW, SEQUENCER_FEED, 3600, treasury));
-
-        // Flagship basket: 50% CASHCAT (deepest liquidity) / 25% NVDA / 25% TSLA.
+        // ── flagship: the AI trade across both asset classes, one ERC-20 ──
+        // Units are per 1e18 shares, illustrative at 2026-07-11 prices (~$30/share):
+        // 0.05 NVDA (~$10.5) + 0.025 TSLA (~$10.2) + 60 CASHCAT (~$9.8).
         address[] memory tokens = new address[](3);
-        uint16[] memory weights = new uint16[](3);
-        tokens[0] = RHChain.CASHCAT;
-        tokens[1] = RHChain.NVDA;
-        tokens[2] = RHChain.TSLA;
-        weights[0] = 5000;
-        weights[1] = 2500;
-        weights[2] = 2500;
-
-        address basket = factory.createBasket(
-            tokens, weights, FeeConfig(100, 100, 8000, 1000, 1000), uint64(block.timestamp + 30 days), vm.addr(pk)
-        );
+        uint256[] memory units = new uint256[](3);
+        tokens[0] = RHChain.NVDA;
+        units[0] = 5e16;
+        tokens[1] = RHChain.TSLA;
+        units[1] = 25e15;
+        tokens[2] = RHChain.CASHCAT;
+        units[2] = 60e18;
+        address index = factory.createIndex("HOODL AI Index", "hAI", tokens, units);
 
         vm.stopBroadcast();
-        console2.log("BasketFactory:", address(factory));
-        console2.log("Flagship basket:", basket);
+        console2.log("IndexFactory:", address(factory));
+        console2.log("IndexLens:   ", address(lens));
+        console2.log("hAI index:   ", index);
+    }
+
+    function _emptyKey() internal pure returns (PoolKey memory) {
+        return PoolKey(Currency.wrap(address(0)), Currency.wrap(address(0)), 0, 0, IHooks(address(0)));
     }
 }

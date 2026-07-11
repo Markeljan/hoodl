@@ -6,13 +6,13 @@ import {FixedPoint96} from "v4-core/src/libraries/FixedPoint96.sol";
 import {IAggregatorV3} from "../interfaces/IAggregatorV3.sol";
 
 /// @title PriceLib — value token holdings in USDG (6-dec) terms
-/// @notice Two price sources:
+/// @notice PERIPHERY-ONLY (used by IndexLens for display + integrations; the index core needs no
+///         prices at all — in-kind mint/redeem is price-free). Two sources:
 ///   • CHAINLINK  — stock tokens (feed already includes the ERC-8056 corporate-action multiplier).
-///   • POOL_USDG  — memecoins with no feed: spot(token/USDG) straight from the v4 pool (USDG is the quote).
-/// @dev  MVP INVARIANT: every basket token is 18-dec (true for all Robinhood stock tokens and CASHCAT);
-///       BasketFactory enforces `decimals()==18` at registration. USDG=6. Chainlink feeds carry their
-///       own `decimals()` (usually 8), read dynamically. The sqrtPrice ratio is raw/raw, so it already
-///       encodes the 18-vs-6 decimal gap — pool valuation needs no extra decimal scaling.
+///   • POOL_USDG  — memecoins with no feed: spot(token/USDG) straight from the v4 pool (USDG quote).
+/// @dev  Decimals-agnostic: Chainlink valuation takes the token's decimals explicitly; the sqrtPrice
+///       ratio is raw/raw so pool valuation needs no decimal scaling at all. Feeds carry their own
+///       `decimals()` (usually 8), read dynamically.
 library PriceLib {
     error BadPrice();
     error StalePrice();
@@ -21,7 +21,6 @@ library PriceLib {
     error ZeroSqrtPrice();
 
     uint256 internal constant USDG_DECIMALS = 6;
-    uint256 internal constant TOKEN_DECIMALS = 18; // enforced invariant for basket tokens + WETH
 
     /// @notice Read a Chainlink feed, reverting on non-positive or stale answers.
     /// @param maxStaleness max seconds since `updatedAt` (per-feed heartbeat; stock feeds are 24/5 so
@@ -43,11 +42,15 @@ library PriceLib {
         if (block.timestamp - startedAt <= gracePeriod) revert GracePeriodNotOver();
     }
 
-    /// @notice Value a raw 18-dec token balance at `price` (feed-native decimals) in USDG (6-dec).
-    /// @dev value = rawBalance · price · 10^USDG / (10^TOKEN · 10^feed). Since TOKEN+feed-USDG ≥ 0
-    ///      (18+8-6), fold into one divisor and use mulDiv for a 512-bit-safe product.
-    function valueUsdg(uint256 rawBalance, uint256 price, uint8 feedDecimals) internal pure returns (uint256) {
-        uint256 divisor = 10 ** (TOKEN_DECIMALS + uint256(feedDecimals) - USDG_DECIMALS);
+    /// @notice Value a raw token balance at `price` (feed-native decimals) in USDG (6-dec).
+    /// @dev value = rawBalance · price · 10^USDG / (10^token · 10^feed). Since token+feed−USDG ≥ 0
+    ///      for real feeds (8-dec), fold into one divisor and use mulDiv for a 512-bit-safe product.
+    function valueUsdg(uint256 rawBalance, uint256 price, uint8 feedDecimals, uint8 tokenDecimals)
+        internal
+        pure
+        returns (uint256)
+    {
+        uint256 divisor = 10 ** (uint256(tokenDecimals) + feedDecimals - USDG_DECIMALS);
         return FullMath.mulDiv(rawBalance, price, divisor);
     }
 

@@ -1,160 +1,105 @@
-# HOODL — Basket Factory: Smart-Contract Spec (as built)
+# HOODL — In-Kind Index Tokens: Smart-Contract Spec (as built)
 
-*Robinhood Chain (mainnet 4663 / testnet 46630) · Foundry · Uniswap v4 · Chainlink. This describes the **shipped** contracts (`src/`), verified by 37 unit tests + a live mainnet-fork test.*
+*Robinhood Chain (mainnet 4663 / testnet 46630) · Foundry · branch `index-pivot`. Describes the shipped contracts in `src/`, verified by 41 unit/fuzz tests + a live mainnet-fork lifecycle test. Supersedes the swap-based "HODL basket" design preserved on `hoodl-pvp-game`.*
 
 ## 0. Product in one paragraph
 
-A **factory** deploys **baskets**. A creator picks a mix of tokens (Robinhood stock tokens + whitelisted memecoins) with target weights and a **hodl-till date**. Anyone buys in with **USDG** at any time; the basket swaps USDG into the underlying per weights and mints (non-transferable) **shares**. Buy-in and early exit charge a fee (default **1% each way**, configurable). **Most of every fee is paid to the participants still in the basket** — accrued as a USDG reward that is **only claimable after the hodl-till date**. Quit before the date and you **forfeit** your accrued reward *and* pay the exit fee — both redistribute to the diamond-hands who stay. Small cuts go to the basket creator and the protocol. It's a HODL game wrapped around a real on-chain portfolio.
+An **IndexFactory** lets anyone deploy an **IndexToken**: an ERC-20 whose every share (1e18) is a fixed basket — `units[i]` raw units of `components[i]`, forever. Mint by depositing the exact basket **in-kind**; redeem by burning shares for the exact basket back. That's the entire core: no swaps, no oracle, no manager, no keeper, no rebalancing, no admin functions. A one-time **0.10% mint fee** (in fully-backed shares) is the protocol's only revenue; **redemption is always free**. A periphery **IndexLens** reports NAV in USDG for UIs and integrators.
 
-## 1. Locked decisions
+## 1. The three unlocks (why this and not "an ETF onchain")
 
-| Decision | Choice |
-|---|---|
-| Settlement asset | **USDG buy-in + swaps** (users pay USDG; vault swaps into the basket) |
-| Assets in v1 | **Both** stock tokens *and* memecoins |
-| Basket shape | **Multi-token** baskets with target weights (Σ = 10 000 bps) |
-| Fee | Entry + exit, default **100 bps** each, configurable per basket (≤ 10%) |
-| Fee split (default) | **holders 80% / creator 10% / protocol 10%** (holders must stay ≥ 50%) |
-| Reward claim | Locked until `hodlTill`; **forfeited pro-rata on early exit** |
-| Rebalance | **Admin-triggered**, manual (sell → USDG → buy) |
-| Shares | **Non-transferable internal ledger** (no ERC-20 in v1) |
+1. **Permissionless issuance.** `createIndex` is open — no fund wrapper, no AP status, no allowlist. The killer instance is **cross-asset**: no vehicle on earth holds NVDA and a memecoin in one ticker; here it's one call.
+2. **Self-maintaining.** Fixed units = cap-weight behavior: USD weights float exactly like a held portfolio, so there is *nothing to manage* — rebalancing was a design choice, not a necessity. The peg to NAV is maintained by **open in-kind create/redeem arbitrage** (everyone is the AP). Composition is immutable: stronger than "no rug" — there is no composition risk at all.
+3. **The index is money.** Shares are a standard ERC-20 with onchain-verifiable holdings: transferable, LP-able, collateralizable. Redemption needs **zero DEX liquidity** — the thin stock pools that killed swap-based designs are irrelevant to solvency here.
 
-## 2. On-chain reality that shaped the design (verified 2026-07-11 via `cast`)
+## 2. Design facts that shaped it (verified on-chain, 2026-07-11)
 
-1. **Routing is USDG-direct, not WETH.** Every WETH-paired v4 pool is empty, and stock tokens have **no WETH pool at all** — they pair against **USDG** directly. The liquid pools are all **token/USDG, hookless**: CASHCAT/USDG 0.5% (L≈3.8e18), NVDA/USDG 1% (L≈5.2e15), TSLA/USDG 0.3% (L≈1.3e16). Each constructed PoolKey **hashes to its live poolId** (fee, tickSpacing, `hooks=0` all confirmed). → route **USDG↔token in one hop**; no WETH intermediary, no ETH/USD feed.
-2. **The two asset classes price differently.** Stock tokens have a **Chainlink** feed (8-dec, already ×ERC-8056 UI-multiplier — use **raw** `balanceOf`). Memecoins have **no feed** → price them straight from the **token/USDG pool spot** (`StateView.getSlot0`). Feeds found in Chainlink's `robinhood-mainnet` directory: NVDA `0x379EC4f7…9F15`, TSLA `0x4A1166a6…7C38`.
-3. **Installed `v4-core` is the `v4.0.0` tag**, where `SwapParams` is **nested in `IPoolManager`** (not `types/PoolOperation.sol` as on `main`). All code targets the v4.0.0 API.
+- **Stock-token DEX liquidity is thin** (~$15–41k for the top 4; SPY/QQQ ≈ $0) → any swap-dependent basket eats slippage and can strand redemptions. In-kind sidesteps it entirely.
+- **ERC-8056 corporate actions are a no-op for raw-unit accounting**: splits change `uiMultiplier`, never raw `balanceOf`; Chainlink feeds return the multiplier-adjusted price per raw token. Fixed raw units are split-proof.
+- **Non-standard ERC-20s** (fee-on-transfer, rebasing) are unsupported: an index containing one is broken *in isolation* — each index is its own contract, so nothing else is affected. Curation is a display-layer (lens/frontend) concern, mirroring Uniswap's permissionless-pool posture.
+- Lens data: NVDA/USD `0x379EC4f7…9F15`, TSLA/USD `0x4A1166a6…7C38` (Chainlink robinhood directory); CASHCAT/USDG v4 pool (fee 5000, tickSpacing 100, hookless) — PoolKey hash-verified against the live poolId.
 
 ## 3. Architecture
 
 ```
-BasketFactory  (singleton, protocol-owned; is Ownable)
-  ├─ token registry:  token → TokenConfig { source, chainlinkFeed, maxStaleness, usdgPoolKey, tokenIsCurrency0 }
-  ├─ global config:   GlobalConfig { stateView, sequencerFeed, sequencerGracePeriod, treasury }
-  └─ createBasket(tokens, weightsBps, FeeConfig, hodlTill, admin) → deploys a Basket
+IndexFactory (Ownable)                              ── core, permissionless
+  ├─ createIndex(name, symbol, tokens[], units[]) → new IndexToken   (open to anyone)
+  ├─ mintFeeBps (default 10, HARD CAP 50) — snapshotted into each index at creation
+  ├─ treasury (fee recipient, read live by indexes at mint time)
+  └─ registry: allIndexes[], isIndex
 
-Basket  (one per basket; is SafeCallback + ReentrancyGuard)
-  ├─ holds the underlying tokens
-  ├─ deposit/withdraw  → v4 swaps USDG↔token DIRECTLY inside one unlock() callback
-  ├─ NAV               → Chainlink (stocks) + token/USDG pool spot via StateView (memes)
-  ├─ fee split + accRewardPerShare (USDG reward pool, MasterChef-style; claim-locked to hodlTill)
-  └─ rebalance         → admin-only (sell → USDG → buy)
+IndexToken (ERC20 + ReentrancyGuard)                ── core, zero admin surface
+  ├─ immutable: components[], units[] (raw per 1e18 shares), mintFeeBps, factory
+  ├─ mint(shares, to)    — pull ceil(units·shares/1e18) of each component; mint shares−fee to `to`,
+  │                        fee shares to factory.treasury()
+  ├─ redeem(shares, to)  — burn, pay floor(units·shares/1e18) of each component. Always. Free.
+  └─ views: components(), previewMint, previewRedeem
 
-External deps (addresses in src/libraries/RHChain.sol):
-  Uniswap v4 PoolManager  0x8366a39C…40951  (swap execution + flash accounting)
-  Uniswap v4 StateView    0xF3334192…673b   (read pool sqrtPriceX96 for memecoin NAV)
-  Chainlink AggregatorV3                     (stock-token USD price; 8-dec)
-  USDG (Global Dollar)    0x5fc5360D…d168    (6-dec quote asset)
+IndexLens (Ownable)                                 ── periphery, display/integration only
+  ├─ per-token PriceConfig: CHAINLINK (feed + staleness) | POOL_USDG (token/USDG v4 pool spot)
+  ├─ valueOf(token, amount) → USDG 6-dec   (USDG itself values 1:1, no config)
+  └─ navPerShare(index) / navOf(index, shares)
+
+Core deps: OpenZeppelin only (ERC20, SafeERC20, Math, ReentrancyGuard, Ownable).
+Lens deps: + v4-core types (PoolKey/PoolId), StateView 0xF3334192…673b, Chainlink feeds, PriceLib.
 ```
 
-**Swap execution: direct `PoolManager` + own `unlockCallback`.** Chosen over the UniversalRouter because the vault already custodies its tokens (no Permit2 dance), it's self-contained, and the direct token/USDG pools are the liquid venue. Trade-off: v4-only misses the deep **v3** CASHCAT pool, and stock pools are thin → **keep demo sizes small; UniversalRouter (v3+v4 routing) and 0x RFQ (stocks) are post-MVP upgrades.**
+## 4. Math & rounding (the whole risk surface)
 
-## 4. Pricing model (NAV in USDG, 6-dec)
+- Mint pulls `ceil(units_i · shares / 1e18)`; redeem pays `floor(units_i · shares / 1e18)`.
+- ⇒ **Solvency invariant**: `balanceOf(component_i) ≥ units_i · totalSupply / 1e18` at all times (fuzz-tested across mint/transfer/partial-redeem storms). Rounding dust accrues to the vault, marginally over-collateralizing remaining holders.
+- Mint is **deterministic** — no price, no slippage params, no deadline, no MEV surface.
+- Decimals-agnostic: units are raw amounts, so 6-dec and 18-dec components mix freely (tested).
+- Fee: `feeShares = shares · mintFeeBps / 10000` minted to treasury, `shares − feeShares` to the minter — both backed by the same deposit ⇒ **zero dilution** of existing holders (unlike streaming fees).
 
-`NAV = Σ_i value_i`, everything in **USDG's 6 decimals**. All basket tokens are **18-dec** (enforced at registration).
+## 5. Contract APIs
 
-- **Stock token (CHAINLINK):** `value = rawBalance · price / 10^(18 + feedDec − 6)` where `price = chainlinkFeed.latestRoundData()` (8-dec, already ×UI-multiplier). Enforce **staleness** (`updatedAt` vs `maxStaleness`) and, when set, the **L2 sequencer-uptime** feed.
-- **Memecoin (POOL_USDG):** `value = poolValueUsdg(rawBalance, sqrtPriceX96, tokenIsCurrency0)` where `sqrtPriceX96 = StateView.getSlot0(usdgPoolKey.toId())`. The raw sqrtPrice ratio is USDG-raw per token-raw, so it yields USDG **directly** — the 18-vs-6 decimal gap is baked in (overflow-safe `FullMath.mulDiv`). ⚠️ This is **spot** and thus manipulable — see §8.
-- **USDG:** treated as \$1 (stablecoin).
-
-Decimal reality handled in `PriceLib`: **USDG 6 · tokens 18 · Chainlink 8 · sqrtPriceX96 Q96**.
-
-## 5. Contract APIs (as implemented)
-
-### 5.1 Types (`src/BasketTypes.sol`)
 ```solidity
-enum PriceSource { NONE, CHAINLINK, POOL_USDG }
+// IndexFactory
+constructor(address owner, address treasury, uint16 mintFeeBps);       // fee ≤ 50 bps
+function createIndex(string name, string symbol, address[] tokens, uint256[] units)
+    external returns (address);                                        // permissionless
+function setMintFeeBps(uint16) external onlyOwner;                     // future indexes only
+function setTreasury(address) external onlyOwner;
 
-struct TokenConfig {
-    PriceSource source;
-    address chainlinkFeed;   // CHAINLINK only
-    uint256 maxStaleness;    // per-feed heartbeat (seconds)
-    PoolKey usdgPoolKey;     // token/USDG v4 pool (routing for all; pricing for POOL_USDG)
-    bool tokenIsCurrency0;   // is `token` currency0 in usdgPoolKey (USDG is the other side)
-}
-struct GlobalConfig { address stateView; address sequencerFeed; uint256 sequencerGracePeriod; address treasury; }
-struct FeeConfig { uint16 entryFeeBps; uint16 exitFeeBps; uint16 holderBps; uint16 creatorBps; uint16 protocolBps; }
+// IndexToken — no admin functions exist
+function mint(uint256 shares, address to) external returns (uint256 sharesOut);
+function redeem(uint256 shares, address to) external returns (uint256[] memory amounts);
+function components() external view returns (address[] memory, uint256[] memory);
+function previewMint(uint256) external view returns (uint256[] memory, uint256);
+function previewRedeem(uint256) external view returns (uint256[] memory);
+// constraints: 1–16 unique components, nonzero units, name/symbol free-form
+
+// IndexLens
+function setConfig(address token, PriceConfig) external onlyOwner;     // display-layer curation
+function valueOf(address token, uint256 amount) public view returns (uint256 usdg6);
+function navPerShare(address index) public view returns (uint256 usdg6);
 ```
 
-### 5.2 `BasketFactory` (`src/BasketFactory.sol`)
-```solidity
-constructor(address poolManager, address usdg, address owner);
-function setToken(address token, TokenConfig cfg) external onlyOwner;   // requires 18-dec; validates usdgPoolKey ↔ token/USDG
-function setGlobal(GlobalConfig cfg) external onlyOwner;                // requires stateView != 0, treasury != 0
-function createBasket(
-    address[] tokens, uint16[] weightsBps,   // Σ = 10_000, unique, all registered
-    FeeConfig fees,                          // entry/exit ≤ 1000 bps; split Σ = 10_000; holderBps ≥ 5000
-    uint64 hodlTill, address admin
-) external returns (address basket);
-function tokenConfig(address) external view returns (TokenConfig);
-function globalConfig() external view returns (GlobalConfig);
-```
+## 6. Status & test coverage
 
-### 5.3 `Basket` (`src/Basket.sol`)
-```solidity
-// state
-address[] tokens; uint16[] weightsBps;                       // target
-uint16 entryFeeBps, exitFeeBps, holderBps, creatorBps, protocolBps;
-uint64 hodlTill; address admin;
-mapping(address => uint256) shares; uint256 totalShares;     // non-transferable
-uint256 accRewardPerShare;                                   // USDG, ACC_PRECISION (1e18)-scaled
-mapping(address => uint256) rewardDebt; mapping(address => uint256) rewardAccrued; // banked, unlock at hodlTill
+`forge test` → **41 offline tests, 0 failures** (+1 gated fork test):
+- `IndexToken.t.sol` (13) — creation validation (dupes/empty/zero/16-cap), exact deterministic mint/redeem, ceil/floor rounding, fee split, transfer→third-party redeem, mixed 18/18/6-dec basket, **fuzz solvency invariant + no-free-lunch round trip**.
+- `IndexFactory.t.sol` (7) — fee cap, **fee snapshot** (existing indexes keep their fee after a change), treasury rotation, registry, auth.
+- `IndexLens.t.sol` (8) — Chainlink 18-dec + 6-dec valuation, pool-spot valuation, USDG identity, staleness revert, config validation, exact NAV summation.
+- `PriceLib.t.sol` (14) — decimal math (incl. 6-dec tokens), sqrtPrice conversion, feed/sequencer guards.
+- `IndexFork.t.sol` (**RH_FORK=1**, live mainnet fork) — mints the AI Index from **real NVDA + TSLA + CASHCAT fully in-kind (zero DEX interaction)**, exact pulls (0.5 / 0.25 / 600), transfer + third-party exact redemption, live NAV **$32.62/share** from real Chainlink + the real v4 pool.
 
-// actions
-function deposit(uint256 usdgIn, uint256 minShares) external returns (uint256 sharesOut);
-function withdraw(uint256 sharesIn, uint256 minUsdgOut) external returns (uint256 usdgOut);
-function claimRewards() external returns (uint256 usdgOut);                 // require now ≥ hodlTill
-function rebalance(address sellToken, uint256 sellAmount, address buyToken, uint256 minBuyOut) external onlyAdmin;
-function nav() public view returns (uint256 usdg);
-function pendingRewards(address user) external view returns (uint256);
-```
+## 7. Known limits / explicit cuts (v1)
 
-## 6. Flows & math
+- **Composition is immutable** — reconstitution = redeem→mint into a successor index (migration tooling is roadmap M3). This is a feature, not a gap: nothing to govern, nothing to rug.
+- **Lens pool-spot is manipulable within a block** — it gates nothing in the core; integrators pricing collateral off the lens must add TWAP/deviation guards (documented in natspec).
+- **Fee-on-transfer/rebasing components unsupported** (isolated breakage, documented).
+- **No USDG zap** (swap-to-mint convenience router) — post-MVP periphery; core stays swap-free.
+- Airdrops/donations to an index are unrecoverable surplus (no sweep function — smaller attack surface).
 
-**`deposit(usdgIn)`**
-1. Pull `usdgIn`. `fee = usdgIn·entryFeeBps/1e4`; `net = usdgIn − fee`.
-2. `navBefore = nav()`.
-3. `unlock`: for each token, swap its weight-share of `net` **USDG → token** directly; take each token; settle total USDG. (Deltas net to zero via flash accounting.)
-4. `navAdded = nav() − navBefore`; `sharesOut = totalShares==0 ? navAdded : navAdded·totalShares/navBefore`; require `≥ minShares`.
-5. Split `fee`: `holderCut → accRewardPerShare += holderCut·PREC/totalShares` (**pre-mint** supply; if first depositor, holderCut → treasury); `creatorCut → admin`; `protocolCut → treasury`.
-6. `_settle(msg.sender)` then mint shares, reset `rewardDebt`.
+## 8. Deploy
 
-**`withdraw(sharesIn)`** — pro-rata slice `amount_i = balance_i·sharesIn/totalShares`
-1. `_settle(msg.sender)` (bank pending onto `rewardAccrued`).
-2. `unlock`: swap each `amount_i` **token → USDG** directly; take total USDG ⇒ `gross`.
-3. If `now < hodlTill` (**early**): `exitFee = gross·exitFeeBps/1e4` (split like entry, to remaining holders); **forfeit** `rewardAccrued·sharesIn/had` → `accRewardPerShare += forfeited·PREC/(totalShares − sharesIn)` (if last holder → treasury). `usdgOut = gross − exitFee`.
-   Else: `usdgOut = gross`; `rewardAccrued` stays claimable.
-4. Burn shares; reset `rewardDebt`; transfer `usdgOut` (require `≥ minUsdgOut`).
+`script/Deploy.s.sol`: IndexFactory (10 bps, treasury from env) + IndexLens (verified feed/pool configs) + flagship **"HOODL AI Index" (hAI)** = 0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share (≈$32 at 2026-07-11 prices).
 
-**`claimRewards()`** — `require(now ≥ hodlTill)`; `_settle`; pay `rewardAccrued[u]`; zero it.
-
-**`rebalance(sellToken, sellAmount, buyToken, minBuyOut)`** — admin-only; `unlock` swaps `sellToken → USDG → buyToken` (USDG nets to zero); require output `≥ minBuyOut`.
-
-`_settle(u)`: `pending = shares[u]·acc/PREC − rewardDebt[u]; rewardAccrued[u] += pending; rewardDebt[u] = shares[u]·acc/PREC;`
-
-## 7. Status & test coverage
-
-**Implemented, formatted, and green.** `forge test` → **37 offline tests**, 0 failures:
-- `PriceLib.t.sol` (13) — decimal math, sqrtPrice valuation, feed staleness/validity, sequencer guard.
-- `BasketFactory.t.sol` (13) — registration + `createBasket` validation (weights, fees, duplicates, decimals, pool-key consistency).
-- `BasketAccounting.t.sol` (11) — full diamond-hands flow against a mock v4 that reproduces flash-accounting: deposit-by-NAV, fee split, holder reward accrual, claim-lock, early-exit fee **+ pro-rata forfeit → redistribution**, rebalance, memecoin pool-pricing.
-
-**`BasketFork.t.sol`** (gated: `RH_FORK=1 forge test --match-path test/BasketFork.t.sol`) — a **real** mainnet-fork deposit/withdraw: $100 USDG → 582.7 CASHCAT through the live v4 pool via the unlock callback, priced by the real StateView, round-tripped to ~$97 (1% entry + 1% exit + ~1% pool fees). The v4 integration is proven on-chain.
-
-## 8. Known risks / explicit MVP cuts
-
-- **Memecoin NAV uses spot price** → flash-loan share-mint manipulation risk. v1 posture: CASHCAT’s pool is deep and share-minting uses the *measured NAV delta*; v2 guards: per-tx deposit cap, spot-vs-oracle sanity, TWAP/oracle-hook pool.
-- **Thin stock-token liquidity** → real slippage; demo with small sizes. v2: 0x RFQ / UniversalRouter (v3+v4).
-- **Sequencer uptime + staleness** checks: staleness always on; sequencer optional (`address(0)` skips) — **set it before mainnet**.
-- **Cut for v1:** ERC-20/transferable shares, clone-proxy factory, streaming/performance fees, keeper/auto rebalance, non-USDG deposits, v3 legs, AI/managed strategies.
-
-## 9. Deploy
-
-`script/Deploy.s.sol` is wired with on-chain-verified feeds + pools (NVDA/TSLA feeds, StateView, three hookless token/USDG PoolKeys, flagship 50% CASHCAT / 25% NVDA / 25% TSLA). Broadcast:
 ```
 PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
 ```
-Set `SEQUENCER_FEED` before a mainnet run.
 
 ---
-*Addresses: [`src/libraries/RHChain.sol`](src/libraries/RHChain.sol). Config: [`foundry.toml`](foundry.toml) (solc 0.8.26, evm cancun).*
+*Addresses: [`src/libraries/RHChain.sol`](src/libraries/RHChain.sol) · config: [`foundry.toml`](foundry.toml) (solc 0.8.26) · prior design: branch `hoodl-pvp-game`.*
