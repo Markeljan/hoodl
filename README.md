@@ -17,10 +17,12 @@ src/
   IndexFactory.sol        permissionless issuance + the protocol's single fee knob
   IndexToken.sol          the index: ERC-20 + in-kind mint/redeem (no oracle, no DEX, no admin)
   periphery/IndexLens.sol NAV in USDG for UIs/integrators (Chainlink stocks, v4 pool spot memecoins)
+  periphery/IndexZap.sol  one-tx USDG ↔ index router (exact-output v4 buys + in-kind mint)
   libraries/PriceLib.sol  decimals-agnostic valuation + feed staleness/sequencer guards (lens-only)
   libraries/RHChain.sol   verified Robinhood Chain addresses (checksummed at compile)
-test/                     41 offline unit/fuzz tests + gated mainnet-fork lifecycle test
-script/Deploy.s.sol       factory + lens + flagship "HOODL AI Index" (NVDA + TSLA + CASHCAT)
+test/                     50 offline unit/fuzz tests + 3 gated mainnet-fork tests
+script/Deploy.s.sol       factory + lens + zap + flagship "HOODL AI Index" (NVDA + TSLA + CASHCAT)
+script/Seed.s.sol         mint supply + bootstrap the hAI/USDG v4 pool at NAV (PositionManager LP)
 ```
 
 **Fee:** 0.10% on mint, paid in index shares to the treasury — fully backed by the minter's deposit (zero dilution), hard-capped at 0.5%, snapshotted per index at creation so existing indexes can never be repriced. **Redemption is always free.**
@@ -31,12 +33,19 @@ script/Deploy.s.sol       factory + lens + flagship "HOODL AI Index" (NVDA + TSL
 
 ```shell
 forge build          # solc 0.8.26
-forge test           # 41 offline tests (fork test auto-skips)
-RH_FORK=1 forge test --match-path test/IndexFork.t.sol -vv   # live mainnet-fork lifecycle
+forge test           # 50 offline tests (fork tests auto-skip)
+RH_FORK=1 forge test --match-path "test/*Fork*" -vv          # live mainnet-fork validation
 PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
+PRIVATE_KEY=… INDEX=… LENS=… forge script script/Seed.s.sol --rpc-url rh_testnet --broadcast
 ```
 
-The fork test mints the AI Index from real NVDA + TSLA + CASHCAT fully in-kind (zero DEX interaction), transfers it, redeems it exactly, and reads a live NAV (**$32.62/share** at 2026-07-11 prices) from real Chainlink feeds + the real CASHCAT/USDG v4 pool.
+The fork tests prove the whole loop on live mainnet state: in-kind mint of real NVDA + TSLA + CASHCAT with zero DEX dependency (NAV **$32.62/share** from real Chainlink + v4); **zapMint** buying 1 hAI with plain USDG for **$32.25** and round-tripping back at ~0.8% total cost; and the **seed loop** — bootstrap a fresh hAI/USDG pool at NAV via the real PositionManager, retail buys hAI with USDG on it, then redeems in-kind and walks away holding real NVDA.
+
+### How people buy in
+
+1. **DEX (retail):** swap USDG → hAI on the seeded v4 pool — one click, price pinned to NAV by arbitrage.
+2. **Zap (one tx):** `zapMint(index, shares, maxUsdgIn)` buys the components and mints in-kind.
+3. **In-kind (arbitrageurs/APs):** deposit the exact basket via `mint()` — the peg mechanism itself.
 
 ## Verified addresses (mainnet 4663)
 

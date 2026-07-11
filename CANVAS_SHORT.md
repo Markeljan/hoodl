@@ -20,7 +20,7 @@ an index here needs no fund plumbing — the contract is the custodian and arbit
 one fee: 0.10% on mint, in fully-backed index shares (zero dilution), snapshotted per index; redemption always free. ETFs charge 3–95 bps yearly — we take 10 bps once.
 
 **Ship This Weekend**
-IndexFactory + IndexToken + NAV lens, deployed to testnet with a mainnet existence proof. demo: create the "AI Index" (NVDA + TSLA + CASHCAT), mint in-kind, transfer, redeem back to the underlying, live NAV from Chainlink + v4. already validated on a mainnet fork: exact in-kind lifecycle, NAV $32.62/share.
+IndexFactory + IndexToken + NAV lens + USDG zap, deployed to testnet with a mainnet existence proof. demo: create the "AI Index" (NVDA + TSLA + CASHCAT), buy it with plain USDG in one tx, transfer, redeem back to the underlying, live NAV from Chainlink + v4. already validated on a mainnet fork: exact in-kind lifecycle at NAV $32.62/share; zap buys 1 share for $32.25; a seeded hAI/USDG pool where retail bought with USDG and redeemed into real NVDA.
 
 ---
 *hoodl.finance · Arbitrum · Open House London · 2026 — deployed on Robinhood Chain*

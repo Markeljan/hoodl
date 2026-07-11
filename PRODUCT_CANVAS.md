@@ -36,7 +36,7 @@ friends trading Robinhood + memestocks, crypto index degens, two finfluencer mut
 M1 (6w): audited contracts on mainnet, 3 flagship indices · M2 (3mo): $1M minted, first lending market accepts an index as collateral · M3 (5mo): migration tooling + rules-based reconstitution modules · M4 (8mo): branded issuance rails
 
 **Ship This Weekend**
-factory + index token + NAV lens on testnet; same bytecode existence-proof on mainnet. live demo: create a mixed index (NVDA + TSLA + memecoin), mint it in-kind, transfer it like any token, redeem back to the underlying, and read its NAV onchain from Chainlink + Uniswap v4
+factory + index token + NAV lens + USDG zap on testnet; bytecode existence-proof on mainnet. live demo: create the AI index (NVDA + TSLA + memecoin), buy it with plain USDG in one tx, transfer it, redeem in-kind — DEX pool seeded at NAV, price pinned by mint/redeem arbitrage
 
 ---
 *Arbitrum · Open House London · 2026 — deployed on Robinhood Chain (testnet 46630, mainnet 4663) · targeting Champions, Founder-in-Residence, Innovation Award*

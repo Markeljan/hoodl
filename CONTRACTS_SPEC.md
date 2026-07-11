@@ -18,6 +18,7 @@ An **IndexFactory** lets anyone deploy an **IndexToken**: an ERC-20 whose every 
 - **ERC-8056 corporate actions are a no-op for raw-unit accounting**: splits change `uiMultiplier`, never raw `balanceOf`; Chainlink feeds return the multiplier-adjusted price per raw token. Fixed raw units are split-proof.
 - **Non-standard ERC-20s** (fee-on-transfer, rebasing) are unsupported: an index containing one is broken *in isolation* — each index is its own contract, so nothing else is affected. Curation is a display-layer (lens/frontend) concern, mirroring Uniswap's permissionless-pool posture.
 - Lens data: NVDA/USD `0x379EC4f7…9F15`, TSLA/USD `0x4A1166a6…7C38` (Chainlink robinhood directory); CASHCAT/USDG v4 pool (fee 5000, tickSpacing 100, hookless) — PoolKey hash-verified against the live poolId.
+- Zap routing (V4Quoter-probed): NVDA buys must route the **0.3%** NVDA/USDG pool — the nominally-deeper 1% pool is **one-sided** and cannot sell NVDA at any size. TSLA 0.3%, CASHCAT 0.5%. Real depth, not reported liquidity, decides routing.
 
 ## 3. Architecture
 
@@ -40,8 +41,15 @@ IndexLens (Ownable)                                 ── periphery, display/in
   ├─ valueOf(token, amount) → USDG 6-dec   (USDG itself values 1:1, no config)
   └─ navPerShare(index) / navOf(index, shares)
 
+IndexZap (Ownable + SafeCallback)                   ── periphery, pure UX convenience
+  ├─ owner-set token → token/USDG PoolKey routing (orientation derived from the key)
+  ├─ zapMint(index, grossShares, maxUsdgIn): EXACT-OUTPUT v4 buys of each component → in-kind
+  │    mint to user → refund unspent USDG. Partial fill reverts (InsufficientLiquidity).
+  ├─ zapRedeem(index, shares, minUsdgOut): in-kind redeem → exact-input sales → USDG to user
+  └─ no oracle: the user's max/min bounds are the only price guard; USDG cash legs skip swaps
+
 Core deps: OpenZeppelin only (ERC20, SafeERC20, Math, ReentrancyGuard, Ownable).
-Lens deps: + v4-core types (PoolKey/PoolId), StateView 0xF3334192…673b, Chainlink feeds, PriceLib.
+Periphery deps: + v4-core (PoolKey/PoolManager), StateView 0xF3334192…673b, Chainlink feeds, PriceLib.
 ```
 
 ## 4. Math & rounding (the whole risk surface)
@@ -78,27 +86,30 @@ function navPerShare(address index) public view returns (uint256 usdg6);
 
 ## 6. Status & test coverage
 
-`forge test` → **41 offline tests, 0 failures** (+1 gated fork test):
+`forge test` → **50 offline tests, 0 failures** (+3 gated fork tests):
 - `IndexToken.t.sol` (13) — creation validation (dupes/empty/zero/16-cap), exact deterministic mint/redeem, ceil/floor rounding, fee split, transfer→third-party redeem, mixed 18/18/6-dec basket, **fuzz solvency invariant + no-free-lunch round trip**.
 - `IndexFactory.t.sol` (7) — fee cap, **fee snapshot** (existing indexes keep their fee after a change), treasury rotation, registry, auth.
 - `IndexLens.t.sol` (8) — Chainlink 18-dec + 6-dec valuation, pool-spot valuation, USDG identity, staleness revert, config validation, exact NAV summation.
+- `IndexZap.t.sol` (9) — exact spend/refund vs a both-directions mock v4, cash-leg handling, slippage + unrouted-component reverts, **round trip loses exactly the 10bps fee** when pools are fee-less.
 - `PriceLib.t.sol` (14) — decimal math (incl. 6-dec tokens), sqrtPrice conversion, feed/sequencer guards.
-- `IndexFork.t.sol` (**RH_FORK=1**, live mainnet fork) — mints the AI Index from **real NVDA + TSLA + CASHCAT fully in-kind (zero DEX interaction)**, exact pulls (0.5 / 0.25 / 600), transfer + third-party exact redemption, live NAV **$32.62/share** from real Chainlink + the real v4 pool.
+- `IndexFork.t.sol` (**RH_FORK=1**) — mints the AI Index from **real NVDA + TSLA + CASHCAT fully in-kind (zero DEX interaction)**, exact pulls (0.5 / 0.25 / 600), transfer + third-party exact redemption, live NAV **$32.62/share** from real Chainlink + the real v4 pool.
+- `ZapSeedFork.t.sol` (**RH_FORK=1**) — (A) zap on real pools: 1 hAI bought with plain USDG for **$32.25**, round trip back at ~0.8% total cost; (B) the full retail loop: seed a fresh hAI/USDG pool at NAV via the **real PositionManager + Permit2**, a retail wallet buys 1.504 hAI with USDG on it, then redeems in-kind — ending with real NVDA it never bought directly.
 
 ## 7. Known limits / explicit cuts (v1)
 
 - **Composition is immutable** — reconstitution = redeem→mint into a successor index (migration tooling is roadmap M3). This is a feature, not a gap: nothing to govern, nothing to rug.
 - **Lens pool-spot is manipulable within a block** — it gates nothing in the core; integrators pricing collateral off the lens must add TWAP/deviation guards (documented in natspec).
 - **Fee-on-transfer/rebasing components unsupported** (isolated breakage, documented).
-- **No USDG zap** (swap-to-mint convenience router) — post-MVP periphery; core stays swap-free.
+- **Zap depth-bounded**: `zapMint` needs live pool depth for every component and reverts loudly when a leg can't fill — in-kind mint/redeem always works regardless.
 - Airdrops/donations to an index are unrecoverable surplus (no sweep function — smaller attack surface).
 
 ## 8. Deploy
 
-`script/Deploy.s.sol`: IndexFactory (10 bps, treasury from env) + IndexLens (verified feed/pool configs) + flagship **"HOODL AI Index" (hAI)** = 0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share (≈$32 at 2026-07-11 prices).
+`script/Deploy.s.sol`: IndexFactory (10 bps, treasury from env) + IndexLens (verified feed/pool configs) + IndexZap (routing configs) + flagship **"HOODL AI Index" (hAI)** = 0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share (≈$32 at 2026-07-11 prices). `script/Seed.s.sol` then mints supply and bootstraps the hAI/USDG v4 pool at lens NAV with full-range liquidity (run from a wallet holding the components).
 
 ```
 PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
+PRIVATE_KEY=… INDEX=… LENS=… forge script script/Seed.s.sol --rpc-url rh_testnet --broadcast
 ```
 
 ---

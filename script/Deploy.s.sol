@@ -4,7 +4,9 @@ pragma solidity 0.8.26;
 import {Script, console2} from "forge-std/Script.sol";
 import {IndexFactory} from "../src/IndexFactory.sol";
 import {IndexLens} from "../src/periphery/IndexLens.sol";
+import {IndexZap} from "../src/periphery/IndexZap.sol";
 import {RHChain} from "../src/libraries/RHChain.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
@@ -51,6 +53,13 @@ contract Deploy is Script {
             )
         );
 
+        // ── periphery: one-tx USDG ↔ index router ──
+        // NVDA routes via the 0.3% pool — the 1% pool is one-sided (cannot sell NVDA; quoter-verified).
+        IndexZap zap = new IndexZap(IPoolManager(RHChain.POOL_MANAGER), RHChain.USDG, deployer);
+        zap.setPool(RHChain.NVDA, _key(RHChain.USDG, RHChain.NVDA, 3000, 60));
+        zap.setPool(RHChain.TSLA, _key(RHChain.TSLA, RHChain.USDG, 3000, 60));
+        zap.setPool(RHChain.CASHCAT, _key(RHChain.CASHCAT, RHChain.USDG, 5000, 100));
+
         // ── flagship: the AI trade across both asset classes, one ERC-20 ──
         // Units are per 1e18 shares, illustrative at 2026-07-11 prices (~$30/share):
         // 0.05 NVDA (~$10.5) + 0.025 TSLA (~$10.2) + 60 CASHCAT (~$9.8).
@@ -67,10 +76,15 @@ contract Deploy is Script {
         vm.stopBroadcast();
         console2.log("IndexFactory:", address(factory));
         console2.log("IndexLens:   ", address(lens));
+        console2.log("IndexZap:    ", address(zap));
         console2.log("hAI index:   ", index);
     }
 
     function _emptyKey() internal pure returns (PoolKey memory) {
         return PoolKey(Currency.wrap(address(0)), Currency.wrap(address(0)), 0, 0, IHooks(address(0)));
+    }
+
+    function _key(address c0, address c1, uint24 fee, int24 tickSpacing) internal pure returns (PoolKey memory) {
+        return PoolKey(Currency.wrap(c0), Currency.wrap(c1), fee, tickSpacing, IHooks(address(0)));
     }
 }

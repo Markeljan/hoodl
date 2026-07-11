@@ -36,11 +36,11 @@ The clubs/manager design was a managed fund — heavy regulatory shape, heavy bu
 | Time | Beat |
 |---|---|
 | 0:00–0:25 | Hook: "Stocks are ERC-20s now. So why does making an index of them still take a fund, a manager, and a keeper? HOODL: anyone mints an index token — and it's just money." |
-| 0:25–1:00 | Create the AI Index live (`createIndex`, one tx). Composition on screen: NVDA + TSLA + CASHCAT — "no vehicle on earth can hold these three in one ticker." |
-| 1:00–1:45 | **Mint in-kind**: deposit 0.5 NVDA + 0.25 TSLA + 600 CASHCAT → receive hAI shares. Point at the trace: *zero swaps, zero slippage, zero oracle.* NAV lens reads $32.62 live from Chainlink + v4. |
-| 1:45–2:20 | **The share is money**: transfer hAI to a second wallet; *that* wallet redeems and receives real NVDA it never bought. "Anyone is the authorized participant — this is how the peg holds itself." |
-| 2:20–2:40 | Trust story: "There is no manager, no admin function, no upgrade path. Composition is immutable. The only thing the protocol can ever change is the fee on *future* indexes — capped at 0.5%." |
-| 2:40–3:00 | Business close: 10 bps once at mint vs 3–95 bps/yr for ETFs; revenue = issuance volume; milestones. |
+| 0:25–0:55 | Create the AI Index live (`createIndex`, one tx). Composition on screen: NVDA + TSLA + CASHCAT — "no vehicle on earth can hold these three in one ticker." |
+| 0:55–1:30 | **Buy it with plain USDG, one tx** (zap): $33 in → 1 hAI out; the trace shows it buying the components and minting in-kind. NAV lens reads ≈$32 live from Chainlink + v4. "Or deposit the basket yourself — minting is permissionless either way." |
+| 1:30–2:05 | **The share is money**: transfer hAI to a second wallet; *that* wallet redeems and receives real NVDA it never bought. Show the seeded hAI/USDG pool trading at NAV: "anyone is the authorized participant — arbitrage holds the peg, not a manager." |
+| 2:05–2:35 | Trust story: "No manager, no admin function, no upgrade path, no oracle in custody. Composition is immutable. The protocol's only knob is the fee on *future* indexes — capped at 0.5% — and redemption is always free." |
+| 2:35–3:00 | Business close: 10 bps once at mint vs 3–95 bps/yr for ETFs; revenue = issuance volume; milestones. |
 
 Reliability kit: pre-funded burner wallets ×2, faucet stock tokens acquired hour 0, Alchemy RPC, fork rehearsal (already green), pre-screenshotted explorer txs, recording backup.
 
