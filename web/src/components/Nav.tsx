@@ -5,6 +5,7 @@ interface NavProps {
   screen: Screen
   themeLabel: string
   connectLabel: string
+  networkState: 'disconnected' | 'ready' | 'wrong'
   onLogo: () => void
   onDiscover: () => void
   onPortfolio: () => void
@@ -12,7 +13,7 @@ interface NavProps {
   onConnect: () => void
 }
 
-export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscover, onPortfolio, onToggleTheme, onConnect }: NavProps) {
+export default function Nav({ screen, themeLabel, connectLabel, networkState, onLogo, onDiscover, onPortfolio, onToggleTheme, onConnect }: NavProps) {
   const items = [
     { key: 'discover', label: 'Discover', active: screen === 'discover' || screen === 'detail', onClick: onDiscover },
     { key: 'portfolio', label: 'Portfolio', active: screen === 'portfolio', onClick: onPortfolio },
@@ -58,8 +59,16 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
       </nav>
       <div className="nav-actions">
         <div className="nav-chain" style={{ border: '1px solid var(--border)', borderRadius: 99, background: 'var(--surface)' }}>
-          <span style={{ width: 8, height: 8, borderRadius: 99, background: 'var(--neon)', animation: 'hoodl-pulse 2.4s ease-in-out infinite' }} />
-          <span style={{ fontSize: 12.5, color: 'var(--text-2)', fontWeight: 500 }}>Robinhood Chain</span>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 99,
+              background: networkState === 'wrong' ? 'var(--neg)' : networkState === 'ready' ? 'var(--neon)' : 'var(--text-3)',
+              animation: networkState === 'ready' ? 'hoodl-pulse 2.4s ease-in-out infinite' : 'none',
+            }}
+          />
+          <span style={{ fontSize: 12.5, color: 'var(--text-2)', fontWeight: 500 }}>{networkState === 'wrong' ? 'Wrong network' : 'Robinhood Chain'}</span>
           <span style={{ font: "500 11px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>4663</span>
         </div>
         <button

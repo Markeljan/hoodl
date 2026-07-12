@@ -1,4 +1,5 @@
 import HoodlMark from './HoodlMark'
+import { addresses, explorerUrl } from '../contracts'
 
 export default function Footer() {
   return (
@@ -14,14 +15,18 @@ export default function Footer() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 22, fontSize: 13.5 }}>
-          {['Docs', 'Contracts', 'GitHub', 'X'].map((l) => (
-            <a key={l} href="#" className="hv-text" style={{ color: 'var(--text-2)' }}>
-              {l}
+          {[
+            ['Chain docs', 'https://docs.robinhood.com/chain/'],
+            ['Contracts', `${explorerUrl}/address/${addresses.factory}`],
+            ['GitHub', 'https://github.com/Markeljan/hoodl'],
+          ].map(([label, href]) => (
+            <a key={label} href={href} target="_blank" rel="noreferrer" className="hv-text" style={{ color: 'var(--text-2)' }}>
+              {label}
             </a>
           ))}
         </div>
         <div style={{ font: "500 11.5px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>
-          Chain 4663 · testnet 46630 · demo UI — not investment advice
+          Robinhood Chain 4663 · live contracts · not investment advice
         </div>
       </div>
     </footer>
