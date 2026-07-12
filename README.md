@@ -25,7 +25,7 @@ script/Deploy.s.sol       factory + lens + zap + flagship "HOODL AI Index" (NVDA
 script/Seed.s.sol         mint supply + bootstrap the hAI/USDG v4 pool at NAV (PositionManager LP)
 ```
 
-**Fee:** 0.10% on mint, paid in index shares to the treasury — fully backed by the minter's deposit (zero dilution), hard-capped at 0.5%, snapshotted per index at creation so existing indexes can never be repriced. **Redemption is always free.**
+**Flagship fee:** hAI charges 0.50% on mint (0.30% protocol + 0.20% creator) and 0.20% on redeem (0.10% protocol + 0.10% creator). Fees are paid in fully backed index shares, hard-capped at 1% per fee leg, and snapshotted at index creation so existing indexes can never be repriced. The redemption path itself remains permissionless and market-independent.
 
 **Rounding invariant:** deposits round up, redemptions round down ⇒ `balanceOf(component) ≥ units·totalSupply/1e18` always (fuzz-tested).
 
@@ -35,7 +35,7 @@ script/Seed.s.sol         mint supply + bootstrap the hAI/USDG v4 pool at NAV (P
 forge build          # solc 0.8.26
 forge test           # 50 offline tests (fork tests auto-skip)
 RH_FORK=1 forge test --match-path "test/*Fork*" -vv          # live mainnet-fork validation
-PRIVATE_KEY=… TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
+PRIVATE_KEY="$DEPLOYER_PRIVATE_KEY" TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
 PRIVATE_KEY=… INDEX=… LENS=… forge script script/Seed.s.sol --rpc-url rh_testnet --broadcast
 ```
 
@@ -51,6 +51,18 @@ The fork tests prove the whole loop on live mainnet state: in-kind mint of real 
 
 Full list in [`src/libraries/RHChain.sol`](src/libraries/RHChain.sol): USDG `0x5fc5…d168`, StateView `0xF333…673b`, NVDA/USD feed `0x379E…9F15`, TSLA/USD feed `0x4A11…7C38`, CASHCAT/USDG v4 pool (fee 5000, spacing 100, hookless — poolId hash-verified).
 
+## Mainnet deployment
+
+Deployed on Robinhood Chain mainnet (chain ID 4663) in block `7711193`:
+
+- IndexFactory: `0x9C1746bB146E1713DaD64aFC0c8becA5Ee5B9882`
+- IndexLens: `0x6F379d544597EBA7A19e13B5b589E832975b5EF4`
+- IndexZap: `0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2`
+- hAI: `0x9f5e540829A647C6BFC02066888Ee6f9E43708FD`
+
+Frontend-ready addresses, ABIs, configuration, and transaction records are in
+[`deployments/robinhood-mainnet.json`](deployments/robinhood-mainnet.json).
+
 ## Status
 
-Contracts implemented and green: 41/41 offline tests + mainnet-fork lifecycle validated. Broadcast pending (needs a funded key).
+Contracts deployed after 60/60 offline tests and 3/3 live mainnet-fork lifecycle tests passed.

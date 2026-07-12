@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "network": {
+    "name": "Robinhood Chain",
+    "key": "robinhood-mainnet",
+    "chainId": 4663,
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
+    "explorerUrl": "https://robinhoodchain.blockscout.com",
+    "explorerApiUrl": "https://robinhoodchain.blockscout.com/api/"
+  },
+  "deployment": {
+    "deployer": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "blockNumber": 7711193,
+    "deployedAt": "2026-07-12T09:51:37Z",
+    "sourceCommit": "8508bf17c77cd91e5fa2afcf5ff8b524291c2404",
+    "sourceTreeWasClean": true,
+    "solcVersion": "0.8.26",
+    "evmVersion": "cancun",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "totalTransactionCostWei": "535754972388000",
+    "broadcastLog": "../broadcast/Deploy.s.sol/4663/run-1783849973503.json"
+  },
+  "contracts": {
+    "indexFactory": {
+      "name": "IndexFactory",
+      "address": "0x9C1746bB146E1713DaD64aFC0c8becA5Ee5B9882",
+      "abi": "./abis/IndexFactory.json",
+      "source": "../src/IndexFactory.sol",
+      "creationTransactionHash": "0xc6e42e3ff91876502c61a52547c8587f704e787a2d4d6a9eb3ae79ec64030c45",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9C1746bB146E1713DaD64aFC0c8becA5Ee5B9882",
+      "verified": true
+    },
+    "indexLens": {
+      "name": "IndexLens",
+      "address": "0x6F379d544597EBA7A19e13B5b589E832975b5EF4",
+      "abi": "./abis/IndexLens.json",
+      "source": "../src/periphery/IndexLens.sol",
+      "creationTransactionHash": "0xce060a07ce69d7adb257f0ba19109ceab6ecd79309b5dd4301c8331c0a09c23f",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6F379d544597EBA7A19e13B5b589E832975b5EF4",
+      "verified": true
+    },
+    "indexZap": {
+      "name": "IndexZap",
+      "address": "0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2",
+      "abi": "./abis/IndexZap.json",
+      "source": "../src/periphery/IndexZap.sol",
+      "creationTransactionHash": "0xc517e599b4971bdcecd1ea8fe6a390d09e3677afa7d56ec2e18f2f4b1744d92d",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2",
+      "verified": true
+    },
+    "hai": {
+      "name": "HOODL AI Index",
+      "symbol": "hAI",
+      "address": "0x9f5e540829A647C6BFC02066888Ee6f9E43708FD",
+      "abi": "./abis/IndexToken.json",
+      "source": "../src/IndexToken.sol",
+      "creationTransactionHash": "0x06351c87b62f92c006c7e93981b65a78a30eea3e68a9e93d4560440c29b4ec77",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9f5e540829A647C6BFC02066888Ee6f9E43708FD",
+      "verified": true
+    }
+  },
+  "roles": {
+    "factoryOwner": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "protocolTreasury": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "lensOwner": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "zapOwner": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "haiCreator": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271"
+  },
+  "feesBps": {
+    "protocolMint": 30,
+    "protocolRedeem": 10,
+    "haiCreatorMint": 20,
+    "haiCreatorRedeem": 10,
+    "haiTotalMint": 50,
+    "haiTotalRedeem": 20
+  },
+  "tokens": {
+    "usdg": {
+      "symbol": "USDG",
+      "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "decimals": 6
+    },
+    "nvda": {
+      "symbol": "NVDA",
+      "address": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "decimals": 18
+    },
+    "tsla": {
+      "symbol": "TSLA",
+      "address": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "decimals": 18
+    },
+    "cashcat": {
+      "symbol": "CASHCAT",
+      "address": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "decimals": 18
+    }
+  },
+  "externalContracts": {
+    "uniswapV4PoolManager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+    "uniswapV4StateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+    "nvdaUsdFeed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+    "tslaUsdFeed": "0x4A1166a659A55625345e9515b32adECea5547C38"
+  },
+  "hai": {
+    "shareDecimals": 18,
+    "navQuoteToken": "USDG",
+    "navQuoteDecimals": 6,
+    "components": [
+      {
+        "symbol": "NVDA",
+        "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+        "rawUnitsPerShare": "50000000000000000",
+        "displayUnitsPerShare": "0.05"
+      },
+      {
+        "symbol": "TSLA",
+        "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+        "rawUnitsPerShare": "25000000000000000",
+        "displayUnitsPerShare": "0.025"
+      },
+      {
+        "symbol": "CASHCAT",
+        "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+        "rawUnitsPerShare": "60000000000000000000",
+        "displayUnitsPerShare": "60"
+      }
+    ]
+  },
+  "lensConfiguration": {
+    "nvda": {
+      "source": "CHAINLINK",
+      "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+      "maxStalenessSeconds": 259200
+    },
+    "tsla": {
+      "source": "CHAINLINK",
+      "feed": "0x4A1166a659A55625345e9515b32adECea5547C38",
+      "maxStalenessSeconds": 259200
+    },
+    "cashcat": {
+      "source": "POOL_USDG",
+      "poolKey": {
+        "currency0": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+        "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "fee": 5000,
+        "tickSpacing": 100,
+        "hooks": "0x0000000000000000000000000000000000000000"
+      },
+      "tokenIsCurrency0": true
+    }
+  },
+  "zapPools": {
+    "nvda": {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "fee": 3000,
+      "tickSpacing": 60,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "tsla": {
+      "currency0": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "fee": 3000,
+      "tickSpacing": 60,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "cashcat": {
+      "currency0": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "fee": 5000,
+      "tickSpacing": 100,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    }
+  },
+  "transactions": [
+    {
+      "nonce": 0,
+      "purpose": "Deploy IndexFactory",
+      "hash": "0xc6e42e3ff91876502c61a52547c8587f704e787a2d4d6a9eb3ae79ec64030c45"
+    },
+    {
+      "nonce": 1,
+      "purpose": "Deploy IndexLens",
+      "hash": "0xce060a07ce69d7adb257f0ba19109ceab6ecd79309b5dd4301c8331c0a09c23f"
+    },
+    {
+      "nonce": 2,
+      "purpose": "Configure NVDA lens price source",
+      "hash": "0xe8ff20ae693f604b4809184e7bbf0b7106fdbbbef7572741a29d5335fbd25e37"
+    },
+    {
+      "nonce": 3,
+      "purpose": "Configure TSLA lens price source",
+      "hash": "0x8882f68b58f57b213b801bf7a9a788a22a49ad1662e3fe2e3eac2140e095872e"
+    },
+    {
+      "nonce": 4,
+      "purpose": "Configure CASHCAT lens price source",
+      "hash": "0x555e568aa1b96641d6de1dd1e2a6ef16ad76277d57cef3c617004d01e73a0243"
+    },
+    {
+      "nonce": 5,
+      "purpose": "Deploy IndexZap",
+      "hash": "0xc517e599b4971bdcecd1ea8fe6a390d09e3677afa7d56ec2e18f2f4b1744d92d"
+    },
+    {
+      "nonce": 6,
+      "purpose": "Configure NVDA zap pool",
+      "hash": "0xf042790ab9e044c42df55b44a126c26d100d7814a05dec1df714eb6f33cdbe2d"
+    },
+    {
+      "nonce": 7,
+      "purpose": "Configure TSLA zap pool",
+      "hash": "0x0ef55aa9e827098b313f57fe4e6e3be8fea293fece68dba02411e3d34739e523"
+    },
+    {
+      "nonce": 8,
+      "purpose": "Configure CASHCAT zap pool",
+      "hash": "0x4b188b4717883fedcc5cf2af8ed5db57f240567c9f5545bc9932b60dc2a4e859"
+    },
+    {
+      "nonce": 9,
+      "purpose": "Create hAI through IndexFactory",
+      "hash": "0x06351c87b62f92c006c7e93981b65a78a30eea3e68a9e93d4560440c29b4ec77"
+    }
+  ],
+  "validation": {
+    "offlineTests": {
+      "passed": 60,
+      "failed": 0,
+      "skipped": 3
+    },
+    "mainnetForkTests": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "postDeploymentRpcStateChecked": true
+  }
+}
