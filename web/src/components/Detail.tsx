@@ -13,8 +13,14 @@ interface DetailProps {
   goDiscover: () => void
   tab: Tab
   setTab: (t: Tab) => void
+  blockNumber: bigint | null
+  explorerUrl: string
+  walletReady: boolean
+  pendingAction: string | null
+  lastTxUrl: string | null
   usdgIn: string
   onUsdgIn: (v: string) => void
+  usdgBalanceLabel: string
   buySharesLabel: string
   buyRoute: BasketLine[]
   buyFeeLabel: string
@@ -28,9 +34,9 @@ interface DetailProps {
   redeemShares: string
   onRedeemShares: (v: string) => void
   redeemBasket: BasketLine[]
+  indexBalanceLabel: string
   redeemFeeLabel: string
   onRedeem: () => void
-  onMoney: () => void
 }
 
 const inputRowStyle: CSSProperties = {
@@ -101,16 +107,12 @@ const symbolChipStyle: CSSProperties = {
   padding: '6px 11px',
 }
 
-function MoneyButton({ title, sub, onClick }: { title: string; sub: string; onClick: () => void }) {
+function Capability({ title, sub }: { title: string; sub: string }) {
   return (
-    <button
-      onClick={onClick}
-      className="hv-border"
-      style={{ textAlign: 'left', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, cursor: 'pointer' }}
-    >
+    <div style={{ textAlign: 'left', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 12, padding: 14 }}>
       <div style={{ font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text)' }}>{title}</div>
       <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
-    </button>
+    </div>
   )
 }
 
@@ -172,8 +174,7 @@ export default function Detail(p: DetailProps) {
         <div className="detail-price">
           <div style={{ font: "700 40px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>{sel.navLabel}</div>
           <div className="detail-price-row">
-            <span style={{ font: "600 15px 'Space Grotesk',sans-serif", color: sel.chgColor }}>{sel.changeLabel}</span>
-            <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>24h</span>
+            <span style={{ font: "600 13px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>Current on-chain NAV</span>
           </div>
           <div className="detail-price-pills">
             <span
@@ -198,32 +199,21 @@ export default function Detail(p: DetailProps) {
         </div>
       </div>
 
-      {/* chart */}
-      <div style={{ marginTop: 22, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '18px 18px 10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ font: "500 12px 'JetBrains Mono',monospace", color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-            NAV / share
-          </span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <span style={{ fontSize: 11.5, color: 'var(--on-neon)', background: 'var(--neon)', borderRadius: 6, padding: '3px 9px', fontWeight: 600 }}>7D</span>
-            <span style={{ fontSize: 11.5, color: 'var(--text-3)', padding: '3px 9px' }}>1M</span>
-            <span style={{ fontSize: 11.5, color: 'var(--text-3)', padding: '3px 9px' }}>ALL</span>
+      <div className="onchain-grid" style={{ marginTop: 22 }}>
+        {[
+          ['NAV / share', sel.navLabel],
+          ['Total supply', `${sel.supplyLabel} ${sel.symbol}`],
+          ['Snapshot block', p.blockNumber == null ? 'Loading…' : `#${p.blockNumber.toLocaleString('en-US')}`],
+        ].map(([label, value]) => (
+          <div key={label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
+            <div style={{ font: "500 11px 'JetBrains Mono',monospace", color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</div>
+            <div style={{ marginTop: 7, font: "600 18px 'Space Grotesk',sans-serif", color: 'var(--text)' }}>{value}</div>
           </div>
-        </div>
-        <svg
-          viewBox="0 0 600 140"
-          preserveAspectRatio="none"
-          style={{ width: '100%', height: 150, display: 'block', '--chart': sel.chartStroke } as CSSProperties}
-        >
-          <defs>
-            <linearGradient id="hoodl-cg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--chart)" stopOpacity="0.24" />
-              <stop offset="100%" stopColor="var(--chart)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path d={sel.chartArea} fill="url(#hoodl-cg)" />
-          <polyline points={sel.chartLine} fill="none" stroke="var(--chart)" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
-        </svg>
+        ))}
+        <a href={p.explorerUrl} target="_blank" rel="noreferrer" className="hv-border" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px', color: 'var(--text)' }}>
+          <div style={{ font: "500 11px 'JetBrains Mono',monospace", color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>Contract</div>
+          <div style={{ marginTop: 7, font: "600 15px 'Space Grotesk',sans-serif" }}>{sel.address.slice(0, 8)}…{sel.address.slice(-6)} ↗</div>
+        </a>
       </div>
 
       {/* two column */}
@@ -285,9 +275,9 @@ export default function Detail(p: DetailProps) {
               The share is money
             </h3>
             <div className="money-grid">
-              <MoneyButton title="Transfer" sub="Send like any ERC-20" onClick={p.onMoney} />
-              <MoneyButton title="Provide liquidity" sub="LP the v4 pool" onClick={p.onMoney} />
-              <MoneyButton title="Collateralize" sub="Post in lending markets" onClick={p.onMoney} />
+              <Capability title="Transfer" sub="Implemented in Portfolio" />
+              <Capability title="ERC-20" sub="Standard balance and allowance surface" />
+              <Capability title="Redeem" sub="Exit directly to the component basket" />
             </div>
           </div>
         </div>
@@ -323,6 +313,16 @@ export default function Detail(p: DetailProps) {
               </button>
             ))}
           </div>
+          {p.pendingAction && (
+            <div style={{ marginBottom: 15, padding: '11px 13px', borderRadius: 10, background: 'var(--neon-dim)', border: '1px solid var(--neon-line)', fontSize: 12.5, color: 'var(--text)' }}>
+              <span style={{ color: 'var(--neon)' }}>●</span> {p.pendingAction}
+            </div>
+          )}
+          {p.lastTxUrl && !p.pendingAction && (
+            <a href={p.lastTxUrl} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 15, fontSize: 12.5 }}>
+              View latest transaction on Blockscout ↗
+            </a>
+          )}
 
           {tab === 'buy' && (
             <div>
@@ -334,6 +334,7 @@ export default function Detail(p: DetailProps) {
                   USDG
                 </span>
               </div>
+              <div style={{ marginTop: 6, textAlign: 'right', fontSize: 11.5, color: 'var(--text-3)' }}>Wallet: {p.usdgBalanceLabel} USDG</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0' }}>
                 <span style={{ color: 'var(--text-3)', fontSize: 16 }}>↓</span>
               </div>
@@ -362,11 +363,11 @@ export default function Detail(p: DetailProps) {
                 <span>Max spend</span>
                 <span style={{ color: 'var(--text-2)' }}>{p.buyMaxLabel}</span>
               </div>
-              <button onClick={p.onBuy} className="hv-lift-sm" style={primaryBtnStyle}>
-                Buy {sel.symbol}
+              <button disabled={p.pendingAction != null} onClick={p.onBuy} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction ? 0.55 : 1, cursor: p.pendingAction ? 'wait' : 'pointer' }}>
+                {p.pendingAction ?? (p.walletReady ? `Buy ${sel.symbol}` : 'Connect wallet & buy')}
               </button>
               <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5 }}>
-                <span style={{ color: 'var(--neon)' }}>●</span> Price pinned to NAV by open mint/redeem arbitrage.
+                <span style={{ color: 'var(--neon)' }}>●</span> The quote reserves a 3% routing buffer; the zap refunds unspent USDG.
               </p>
             </div>
           )}
@@ -399,8 +400,8 @@ export default function Detail(p: DetailProps) {
                 <span>Mint fee</span>
                 <span style={{ color: 'var(--text-2)' }}>{sel.fMintLabel}</span>
               </div>
-              <button onClick={p.onMint} className="hv-lift-sm" style={primaryBtnStyle}>
-                Deposit basket &amp; mint
+              <button disabled={p.pendingAction != null} onClick={p.onMint} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction ? 0.55 : 1, cursor: p.pendingAction ? 'wait' : 'pointer' }}>
+                {p.pendingAction ?? (p.walletReady ? 'Approve basket & mint' : 'Connect wallet & mint')}
               </button>
               <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5 }}>
                 <span style={{ color: 'var(--neon)' }}>●</span> Deterministic — no price, no slippage, no MEV surface.
@@ -415,6 +416,7 @@ export default function Detail(p: DetailProps) {
                 <input type="text" inputMode="decimal" value={p.redeemShares} onChange={(e) => p.onRedeemShares(e.target.value)} style={inputStyle} />
                 <span style={symbolChipStyle}>{sel.symbol}</span>
               </div>
+              <div style={{ marginTop: 6, textAlign: 'right', fontSize: 11.5, color: 'var(--text-3)' }}>Wallet: {p.indexBalanceLabel} {sel.symbol}</div>
               <div style={boxStyle}>
                 <div style={boxHeadStyle}>You receive back</div>
                 {p.redeemBasket.map((rb) => (
@@ -432,6 +434,7 @@ export default function Detail(p: DetailProps) {
                 <span style={{ color: 'var(--text-2)' }}>{p.redeemFeeLabel}</span>
               </div>
               <button
+                disabled={p.pendingAction != null}
                 onClick={p.onRedeem}
                 className="hv-ghost"
                 style={{
@@ -442,11 +445,12 @@ export default function Detail(p: DetailProps) {
                   borderRadius: 12,
                   background: 'transparent',
                   color: 'var(--text)',
-                  cursor: 'pointer',
+                  cursor: p.pendingAction ? 'wait' : 'pointer',
+                  opacity: p.pendingAction ? 0.55 : 1,
                   font: "600 15.5px 'Space Grotesk',sans-serif",
                 }}
               >
-                Redeem to basket
+                {p.pendingAction ?? (p.walletReady ? 'Redeem to basket' : 'Connect wallet & redeem')}
               </button>
               <div style={{ marginTop: 12, padding: '11px 13px', borderRadius: 10, background: 'var(--neon-dim)', border: '1px solid var(--neon-line)' }}>
                 <p style={{ margin: 0, fontSize: 12, color: 'var(--text)', lineHeight: 1.5 }}>

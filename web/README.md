@@ -1,32 +1,37 @@
-# React + TypeScript + Vite
+# HOODL web app
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The Vite/React frontend reads and writes the deployed Robinhood Chain contracts recorded in
+[`../deployments/robinhood-mainnet.json`](../deployments/robinhood-mainnet.json). Contract ABIs are
+imported from [`../deployments/abis/`](../deployments/abis/); addresses are not duplicated in the
+web source.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```shell
+bun install
+bun run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The app uses the public Robinhood Chain RPC for read-only state. To transact, open it in a browser
+with an injected EVM wallet. Connecting requests Robinhood Chain mainnet (chain ID `4663`) and adds
+the network when the wallet reports that it is unknown.
+
+## Implemented contract flows
+
+- Discover indexes from `IndexFactory.indexesCount` and `allIndexes`.
+- Read index metadata, immutable fees, total supply, components, token metadata, and live NAV.
+- Read connected-wallet hAI and USDG balances.
+- Buy with USDG through `IndexZap.zapMint`, including approval and a 3% maximum-spend buffer.
+- Mint in-kind using `previewMint`, exact component approvals, and `IndexToken.mint`.
+- Redeem directly to the component basket with `IndexToken.redeem`.
+- Transfer hAI with the ERC-20 `transfer` function.
+
+Every write is simulated before it is sent, then tracked until its Robinhood Chain receipt is
+confirmed. Transaction links point to Blockscout.
+
+## Checks
+
+```shell
+bun run lint
+bun run build
+```

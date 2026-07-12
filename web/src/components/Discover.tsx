@@ -2,10 +2,13 @@ import type { IndexView } from '../model'
 
 interface DiscoverProps {
   indexes: IndexView[]
+  loading: boolean
+  error: string | null
+  retry: () => void
   openDetail: (id: string) => void
 }
 
-export default function Discover({ indexes, openDetail }: DiscoverProps) {
+export default function Discover({ indexes, loading, error, retry, openDetail }: DiscoverProps) {
   return (
     <main className="page">
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 26 }}>
@@ -20,6 +23,20 @@ export default function Discover({ indexes, openDetail }: DiscoverProps) {
           {indexes.length} indexes live
         </div>
       </div>
+      {loading && indexes.length === 0 && (
+        <div style={{ padding: 28, border: '1px solid var(--border)', borderRadius: 16, background: 'var(--surface)', color: 'var(--text-2)' }}>
+          Reading the factory registry and index state from Robinhood Chain…
+        </div>
+      )}
+      {error && indexes.length === 0 && (
+        <div style={{ padding: 28, border: '1px solid var(--border)', borderRadius: 16, background: 'var(--surface)' }}>
+          <div style={{ color: 'var(--neg)', fontWeight: 600 }}>Could not read the deployed contracts</div>
+          <div style={{ color: 'var(--text-2)', fontSize: 13.5, marginTop: 7 }}>{error}</div>
+          <button onClick={retry} className="hv-ghost" style={{ marginTop: 16, padding: '10px 14px', border: '1px solid var(--border-strong)', borderRadius: 9, background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}>
+            Retry
+          </button>
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(280px,100%),1fr))', gap: 18 }}>
         {indexes.map((ix) => (
           <button
@@ -85,7 +102,10 @@ export default function Discover({ indexes, openDetail }: DiscoverProps) {
                 <div style={{ font: "700 22px 'Space Grotesk',sans-serif", color: 'var(--text)' }}>{ix.navLabel}</div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>NAV / share</div>
               </div>
-              <div style={{ font: "600 14px 'Space Grotesk',sans-serif", color: ix.chgColor }}>{ix.changeLabel}</div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>{ix.supplyLabel}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>total supply</div>
+              </div>
             </div>
           </button>
         ))}
