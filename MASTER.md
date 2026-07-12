@@ -18,7 +18,7 @@
 | IndexLens | `0x6F379d544597EBA7A19e13B5b589E832975b5EF4` |
 | IndexZap | `0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2` |
 | hAI (flagship) | `0x9f5e540829A647C6BFC02066888Ee6f9E43708FD` — "HOODL AI Index" |
-| hAI composition | **0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share** (immutable, ≈ $32/share NAV) |
+| hAI composition | **0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share** (immutable; NAV ≈ $31–32, live — $31.18 at last check 2026-07-12) |
 | Fees (hAI, all-in) | **0.50% to mint, 0.20% to redeem** — protocol 30/10 bps + creator 20/10 bps. No management fee, ever. |
 | Fee rules | Four rates (protocol mint/redeem, creator mint/redeem), each hard-capped at 100 bps, **snapshotted immutably per index at creation**. Creators keep 100% of their fee. Fees paid in fully-backed shares — zero dilution, redemption never skims the basket. |
 | Explorer / RPC | robinhoodchain.blockscout.com · rpc.mainnet.chain.robinhood.com |
@@ -36,14 +36,14 @@
 
 **Short variants:**
 - "Indexes for the Robinhood generation." (tagline)
-- "Wrap stocks and crypto into one token anyone can buy." (canvas one-line)
+- "Wrap stocks or crypto into simple index tokens anyone can create, share, and buy." (canvas one-line, matches §2)
 - "Your first DeFi product shouldn't feel like DeFi." (hook line)
 
 **25-word boilerplate:**
 > HOODL turns baskets of tokenized stocks and crypto into simple index tokens on Robinhood Chain — anyone can create one, anyone can buy one, in one tap.
 
 **100-word boilerplate:**
-> Robinhood Chain put real stocks onchain as ERC-20s, next to deep memecoin liquidity — and put millions of non-crypto-native users one click away from DeFi. HOODL gives them the first product they already understand: the index. Anyone can wrap a fixed basket of tokenized stocks and crypto into a single ERC-20 and share it; anyone can buy it with USDG in one transaction. There's no manager, no rebalancing, and no way to gate your exit — every token is redeemable in-kind for exactly the assets inside it, forever. Live on Robinhood Chain mainnet: hoodl.finance.
+> Robinhood Chain put real stocks onchain as ERC-20s, next to deep memecoin liquidity — and put millions of non-crypto-native users one click away from DeFi. HOODL gives them the first product they already understand: the index. Anyone can wrap a fixed basket of tokenized stocks and crypto into a single ERC-20 and share it; anyone can buy it with USDG in one transaction. There's no manager, no rebalancing, and no creator who can gate your exit — every token is redeemable in-kind for exactly the assets inside it. Live on Robinhood Chain mainnet: hoodl.finance.
 
 ### The narrative arc (use this spine everywhere: pitch, landing, tweets)
 
@@ -70,7 +70,7 @@
 **One line:** Wrap stocks or crypto into simple index tokens anyone can create, share, and buy.
 
 **Who is this for (ICP, in order):**
-1. **Crypto-curious Robinhood retail** — arriving on Robinhood Chain with USDG, wanting diversified exposure in one tap without learning DeFi.
+1. **Crypto-curious Robinhood retail** — arriving on Robinhood Chain with USDG, wanting diversified exposure in one tap without learning DeFi. (In practice this is Robinhood's non-US/EU app users — the cohort that can legally hold stock tokens; see §11.1.)
 2. **Index creators** — traders/influencers who bundle a thesis ("the AI trade") into one shareable ticker and earn creator fees.
 3. **Protocols/integrators** — anyone needing a redeemable, unruggable basket token as collateral or a building block.
 
@@ -88,7 +88,7 @@ Buy every leg separately across thin pools, or hold single volatile tokens, or s
 One-tap index buying for Robinhood Chain's first wave of users, powered by the only primitive that makes indexes safe *without* a manager: fixed-units baskets, immutable composition, in-kind mint/redeem, price pegged to NAV by open arbitrage (everyone is the authorized participant). No rebalancing needed — fixed units drift like a held portfolio, which is the honest default.
 
 **Why now:**
-Robinhood Chain launched **eleven days ago**. Stocks live as ERC-20s next to memecoin liquidity for the first time anywhere; $500M+ DEX volume; a huge non-crypto-native user base one click away. The category ("index layer for tokenized stocks + crypto") is being claimed *this month* — two competitor frontends already exist and both got the trust model wrong.
+Robinhood Chain launched **eleven days ago**. Stocks live as ERC-20s next to memecoin liquidity for the first time anywhere; $500M+ DEX volume; a huge non-crypto-native user base one click away. The category ("index layer for tokenized stocks + crypto") is being claimed *this month* — two competitor frontends already exist: one has no contracts and lets the creator gate your exit; the other gates creation behind a stocks-only whitelist and charges up to 3%/yr management.
 
 **Why onchain, why Arbitrum / Robinhood Chain:**
 An index here needs no fund wrapper: **the contract is the custodian**, anyone is the authorized participant, and in-kind redemption keeps the token worth exactly its contents with zero counterparty. Only Robinhood Chain has tokenized equities and crypto side by side as composable ERC-20s (with Chainlink equity feeds + Uniswap v4 for pricing display). Without onchain: you need an issuer, an AP agreement, a custodian, and a prospectus. With it: one transaction.
@@ -108,11 +108,11 @@ Protocol fee 30 bps mint / 10 bps redeem (hard cap 100 each, snapshotted per ind
 
 **Contracts — live on Robinhood Chain mainnet, Blockscout-verified (see §0 for addresses):**
 - **IndexFactory** — `createIndex(name, symbol, tokens[], units[])` (+ optional creator fees, description, imageURI). Fully permissionless, no allowlist, 1–16 components, any ERC-20. Each index is its own contract; a bad component can only break its own index.
-- **IndexToken** — the index itself. **Zero admin functions.** Composition, units, and all four fee rates immutable at creation. `mint(shares, to)` pulls the exact basket in-kind (rounds up); `redeem(shares, to)` pays the exact basket out (rounds down); fuzz-tested solvency invariant (vault can never owe more than it holds). Redemption needs zero DEX liquidity and **can never be paused by anyone**. Fully on-chain metadata (base64 tokenURI/contractURI). Creator can only rotate their fee recipient and edit display strings.
+- **IndexToken** — the index itself. **No admin functions over custody, composition, or fee rates.** Composition, units, and all four fee rates immutable at creation; the creator's only powers are rotating their fee recipient and editing display strings — neither touches funds. `mint(shares, to)` pulls the exact basket in-kind (rounds up); `redeem(shares, to)` pays the exact basket out (rounds down); fuzz-tested solvency invariant (vault can never owe more than it holds). Redemption needs zero DEX liquidity and **can never be paused at the HOODL layer** — no pause or gate exists anywhere in our contracts (issuer-level stock-token freezes are the same risk as holding the components directly; see §11.2). Fully on-chain metadata (base64 tokenURI/contractURI).
 - **IndexLens** (periphery, display-only) — NAV in USDG: Chainlink feeds for stock tokens (staleness-guarded, 24/5-aware), Uniswap v4 spot for memecoins. Zero effect on custody.
 - **IndexZap** (periphery, optional) — one-transaction USDG ↔ index. Buy: exact-output v4 swaps per component → in-kind mint → refund unspent USDG. Sell: redeem in-kind → sell components for USDG. No oracle; user bounds are the price guard; unrouted tokens can always still mint/redeem directly.
 
-**Flagship index — hAI ("HOODL AI Index"):** 0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share ≈ $32 NAV. The AI thesis in one ticker: the chipmaker, the robotaxi bet, and the chain's deepest memecoin ($8.18M pool). Created through the public factory like any user index. *Supply is currently 0 — the first mainnet mint can happen live on stage.*
+**Flagship index — hAI ("HOODL AI Index"):** 0.05 NVDA + 0.025 TSLA + 60 CASHCAT per share, NAV ≈ $31–32 (live — check before stage). The AI thesis in one ticker: the chipmaker, the robotaxi bet, and the chain's deepest memecoin ($8.18M pool). Created through the public factory like any user index. *Supply is currently 0 — the first mainnet mint can happen live on stage.*
 
 **Web app (`web/`, hoodl.finance)** — Vite + React, dark/light, mobile-responsive, **fully wired to mainnet — zero mock data**:
 - **Landing:** live NAV, live composition read from chain, fee strip read from the contract.
@@ -138,13 +138,16 @@ Protocol fee 30 bps mint / 10 bps redeem (hard cap 100 each, snapshotted per ind
 - **Redeem:** burn shares → receive the exact basket (fee taken by transferring shares, never by skimming the basket — so redemption stays exact and ungateable).
 - **Peg:** if the token trades above NAV, anyone mints and sells; below NAV, anyone buys and redeems. **Everyone is the authorized participant.** No oracle in the custody path; the mint/redeem math never reads a price.
 - **"No rebalancing" is a feature:** fixed units mean weights drift exactly like a held portfolio (winners grow). Nothing to manage, nothing to trust, no keeper to fail. Want new weights? Redeem and mint a successor index — migration tooling is roadmap.
-- **Composability:** an IndexToken is a standard ERC-20 — transfer it, LP it, collateralize it, and **use it as a component of another index** (meta-indexes / index-of-indexes work today; neither competitor's model can do this).
+- **Composability:** an IndexToken is a standard ERC-20 — transfer it, LP it, collateralize it, and **use it as a component of another index**. Nothing in the factory or mint/redeem path prevents it (reentrancy guards are per-contract), so meta-indexes / index-of-indexes are possible by design — but this path has no test yet, so say "the design supports index-of-indexes" rather than "works today" until one exists. Neither competitor's model can do this at all.
 
 **Judge Q&A crib (updated):**
 - *"How is this different from HoodETF?"* — "They gate creation behind a stocks-only whitelist and charge up to 3%/yr management. We're permissionless, cross-asset, all-in 0.50%/0.20% once, and creators keep 100% of their fee."
 - *"And HoodFunds?"* — "A frontend — their docs say drafts stay local until contracts are connected. And their model lets the creator pause redemption. Ours can't be paused by anyone, including us. They could run on our factory."
 - *"What if the memecoin pool is manipulated?"* — "Core doesn't care — no price gates minting or redemption; they're exact in-kind. The lens is display-layer; collateral integrators would add TWAPs."
-- *"Who can rug it?"* — "Nobody. Zero admin functions, immutable composition and fees. The factory owner's only powers are the protocol fee on *future* indexes (capped at 1%) and the treasury address."
+- *"Who can rug it?"* — "Nobody at our layer. No admin functions over custody, composition, or fee rates — the creator can only rotate their fee recipient and edit display strings. The factory owner's only powers are the protocol fee on *future* indexes (capped at 1%) and the treasury address."
+- *"Can't Robinhood freeze the stock tokens?"* — "At the token layer, yes — the issuer retains that power, and it's the identical risk to holding NVDA-token directly. Our layer adds zero pause surface on top of it."
+- *"Isn't your headline user American — and Americans can't hold stock tokens?"* — "Robinhood's stock tokens serve Robinhood's non-US app users (EU first) — 'the Robinhood generation' is that global cohort. A production front end geofences per Reg S, exactly like Robinhood's own app does."
+- *"What about Robindex?"* — (verify status before stage — it appears in 7/10 research but was dropped from the 7/11 competitor review; if live, the answer per BUILD_BRIEF: "stake-gated, stock-only, keeper-rebalanced, no in-kind exit — we're permissionless, cross-asset, self-maintaining, and redemption never needs a market.")
 - *"Rebalancing?"* — "Fixed units behave like a held portfolio. Opt-in strategies and reconstitution tooling are roadmap — as separate, explicit products, never a silent change to a token you already hold."
 - *"Regulation?"* — "The protocol never custodies for anyone — minting is self-service against your own tokens; Reg S enforcement lives at the stock-token layer. No pooled discretionary management exists to regulate."
 - *"Why will normies use this?"* — "Because it's the one DeFi product they don't have to learn. They already know what an index is; we removed everything else."
@@ -161,7 +164,7 @@ Protocol fee 30 bps mint / 10 bps redeem (hard cap 100 each, snapshotted per ind
 | Management fee | **None, ever** | ≤3%/yr | — | 3–95 bps/yr |
 | All-in cost (flagship) | 0.50% in / 0.20% out, once | 0.30–2.00% + streaming | 0–1% creator | annual drag |
 | Creator economics | ≤1%/1% fee, **keeps 100%**, sellable | 90/10 split w/ protocol | 0–1% | n/a |
-| Meta-indexes | ✅ (index can hold an index) | ❌ | ❌ | ❌ |
+| Meta-indexes | ✅ by design (untested — see §4) | ❌ | ❌ | ❌ |
 
 **Five stated edges (from COMPETITORS.md):** (1) only truly permissionless issuance — nobody else can put NVDA and a memecoin in one ticker; (2) cheapest fees — the Vanguard of onchain indexes; (3) deterministic oracle-free core — no price in the mint path, no pause anywhere, solvency fuzz-tested; (4) routing rigor — pool depth probed with V4Quoter, found the one-sided NVDA 1% pool others would trap funds in; (5) index-of-indexes.
 **Positioning line:** *HOODL is the issuance layer the other frontends need.*
@@ -187,14 +190,15 @@ Protocol fee 30 bps mint / 10 bps redeem (hard cap 100 each, snapshotted per ind
 |---|---|---|
 | 0:00–0:20 | **Hook** | "Robinhood Chain launched eleven days ago. Stocks are ERC-20s now, and millions of Robinhood users are one click from DeFi — except everything here still feels like DeFi. We built the one product they already understand: the index." |
 | 0:20–0:45 | **Problem → product** | "Today their options are buying every leg across thin pools, or 'ETF' products that are whitelist-gated, stocks-only, charge management fees — or let the creator pause your exit. HOODL: anyone creates an index, anyone buys it in one tap, and nobody — not even us — can touch what's inside." |
-| 0:45–1:50 | **Live demo (mainnet)** | Open hoodl.finance → Discover (live from factory) → hAI detail: "The AI trade in one ticker — NVDA, TSLA, and the chain's biggest memecoin. No vehicle on earth can hold these three." → **Buy with USDG, one transaction** (zap buys components + mints in-kind; show Blockscout tx) — "we just minted the first hAI shares that exist, live on mainnet" → Portfolio look-through → **Redeem in-kind**: "this wallet now holds real NVDA it never bought on any exchange. That exit can never be paused — it doesn't even need a market to exist." |
+| 0:45–1:50 | **Live demo (mainnet)** | Open hoodl.finance → Discover (live from factory) → hAI detail: "The AI trade in one ticker — NVDA, TSLA, and the chain's biggest memecoin. No vehicle on earth can hold these three." → **Buy with USDG, one transaction** (zap buys components + mints in-kind; show Blockscout tx) — "we just minted hAI shares live on mainnet" (upgrade to "the *first* hAI shares that exist" only if totalSupply() = 0 was verified minutes before going up — the address is public and anyone can front-run the claim) → Portfolio look-through → **Redeem in-kind**: "this wallet now holds real NVDA it never bought on any exchange. That exit can never be paused — it doesn't even need a market to exist." |
 | 1:50–2:20 | **Trust story** | "Why is it safe to be this simple? No manager, no admin key, no oracle in custody, no rebalancing — fixed units drift like a held portfolio. Price stays pinned to NAV because anyone can mint or redeem at par: everyone is the authorized participant. 60 tests, fuzz-proven solvency, verified contracts." |
 | 2:20–2:45 | **Business + moat** | "0.50% in, 0.20% out, all-in — zero management fee, ever, versus up to 3% a year from the live competitor. Creators set their own fee and keep 100% of it: launching an index is launching a revenue stream." |
 | 2:45–3:00 | **Vision close** | "Next: create-your-index from your phone, index tokens as collateral, AI portfolio managers proposing baskets. HOODL is how the Robinhood generation gets into DeFi — starting with a product they don't have to learn. Live now at hoodl.finance." |
 
 **Demo logistics:**
 - Pre-fund demo wallet with USDG (+ ETH for gas). ⚠️ Reg S: the wallet that mints/redeems will hold stock tokens — use a non-US person's wallet (see §11).
-- Rehearse the exact click path twice; record the full happy path as video backup; pre-screenshot Blockscout txs.
+- Rehearse the exact click path twice **on a local fork** (`anvil --fork-url https://rpc.mainnet.chain.robinhood.com`), not against mainnet — a mainnet rehearsal would itself mint hAI and burn the "first shares" line. Record the full happy path as video backup; pre-screenshot Blockscout txs.
+- Check hAI `totalSupply()` on Blockscout minutes before the pitch; if nonzero, drop the word "first."
 - Fallbacks in order: live → video → screenshots. RPC hiccup ≠ contract failure; say "chain, not contracts" and switch to video.
 - If time allows in Q&A: transfer hAI to a second wallet to land "the index is money."
 
@@ -258,6 +262,7 @@ The deck (Daniel Lumi, Offchain Labs) preaches: find a narrow wedge, one ICP, on
 5. **hAI supply is 0** until the first mainnet mint; the seeded DEX pool exists only in fork tests so far. Say "live contracts," not "trading volume."
 6. **No audit yet.** Say "fuzz-tested, verified source" — never "audited."
 7. **Not investment advice; hAI is a demo flagship, not a recommendation.** Keep the footer disclaimer.
+8. **The "$500M+ DEX volume" figure has no source on file** — it appears only in the canvas/pitch. Pin a source (GeckoTerminal / Blockscout stats) before saying it on stage, or soften to "hundreds of millions in DEX volume in its first weeks."
 
 ---
 

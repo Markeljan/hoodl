@@ -20,7 +20,7 @@ src/
   periphery/IndexZap.sol  one-tx USDG ↔ index router (exact-output v4 buys + in-kind mint)
   libraries/PriceLib.sol  decimals-agnostic valuation + feed staleness/sequencer guards (lens-only)
   libraries/RHChain.sol   verified Robinhood Chain addresses (checksummed at compile)
-test/                     50 offline unit/fuzz tests + 3 gated mainnet-fork tests
+test/                     60 offline unit/fuzz tests + 3 gated mainnet-fork tests
 script/Deploy.s.sol       factory + lens + zap + flagship "HOODL AI Index" (NVDA + TSLA + CASHCAT)
 script/Seed.s.sol         mint supply + bootstrap the hAI/USDG v4 pool at NAV (PositionManager LP)
 ```
@@ -33,7 +33,7 @@ script/Seed.s.sol         mint supply + bootstrap the hAI/USDG v4 pool at NAV (P
 
 ```shell
 forge build          # solc 0.8.26
-forge test           # 50 offline tests (fork tests auto-skip)
+forge test           # 60 offline tests (fork tests auto-skip)
 RH_FORK=1 forge test --match-path "test/*Fork*" -vv          # live mainnet-fork validation
 PRIVATE_KEY="$DEPLOYER_PRIVATE_KEY" TREASURY=… forge script script/Deploy.s.sol --rpc-url rh_testnet --broadcast --verify
 PRIVATE_KEY=… INDEX=… LENS=… forge script script/Seed.s.sol --rpc-url rh_testnet --broadcast
