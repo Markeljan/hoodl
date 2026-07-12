@@ -1,22 +1,11 @@
+import HoodlMark from './HoodlMark'
+
 export default function Footer() {
   return (
     <footer style={{ borderTop: '1px solid var(--border)', marginTop: 20 }}>
       <div className="footer-inner">
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <span
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: 'var(--neon)',
-              color: 'var(--on-neon)',
-              font: "700 17px 'Space Grotesk',sans-serif",
-            }}
-          >
-            H
-          </span>
+          <HoodlMark size={30} radius={8} style={{ borderRadius: 8 }} />
           <div>
             <div style={{ font: "700 16px 'Space Grotesk',sans-serif", color: 'var(--text)', letterSpacing: '-.01em' }}>
               HOODL <span style={{ font: "500 12px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>.finance</span>

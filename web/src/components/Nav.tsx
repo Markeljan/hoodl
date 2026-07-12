@@ -1,4 +1,5 @@
 import type { Screen } from '../model'
+import HoodlMark from './HoodlMark'
 
 interface NavProps {
   screen: Screen
@@ -30,21 +31,7 @@ export default function Nav({ screen, themeLabel, connectLabel, onLogo, onDiscov
       }}
     >
       <button onClick={onLogo} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-        <span
-          style={{
-            display: 'grid',
-            placeItems: 'center',
-            width: 34,
-            height: 34,
-            borderRadius: 9,
-            background: 'var(--neon)',
-            color: 'var(--on-neon)',
-            font: "700 20px/1 'Space Grotesk',sans-serif",
-            boxShadow: '0 6px 18px -8px var(--neon)',
-          }}
-        >
-          H
-        </span>
+        <HoodlMark size={34} radius={9} style={{ boxShadow: '0 6px 18px -8px var(--neon)', borderRadius: 9 }} />
         <span style={{ font: "700 20px/1 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>HOODL</span>
       </button>
       <nav className="nav-links">
