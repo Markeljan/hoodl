@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { track } from '@vercel/analytics/react'
 import { getAddress } from 'viem'
 import { addresses, explorerUrl } from './contracts'
 import { amountLabel, mulDivCeil, mulDivFloor, netShares, parseAmount, parseAmountOrZero, shortAddress, usdRawLabel } from './model'
@@ -63,15 +64,18 @@ export default function App() {
   const runAction = async (action: () => Promise<`0x${string}`>, success: string, after?: () => void) => {
     try {
       const hash = await action()
+      track('Protocol Action Completed')
       toast(`${success} · ${shortAddress(hash, 10, 6)}`)
       after?.()
     } catch (error) {
+      track('Protocol Action Failed')
       toast(messageOf(error))
     }
   }
 
   const go = (nextScreen: Screen) => {
     setScreen(nextScreen)
+    track('Screen Viewed', { screen: nextScreen })
     window.scrollTo(0, 0)
   }
   const openDetail = (id: string) => {
@@ -142,12 +146,15 @@ export default function App() {
     try {
       if (hoodl.wrongNetwork) {
         await hoodl.switchNetwork()
+        track('Wallet Network Switched')
         toast('Switched to Robinhood Chain.')
       } else if (hoodl.account) {
         await hoodl.disconnect()
+        track('Wallet Disconnected')
         toast('Wallet disconnected.')
       } else {
         const account = await hoodl.connect()
+        track('Wallet Connected')
         toast(`Connected ${shortAddress(account)}.`)
       }
     } catch (error) {

@@ -2,12 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/hoodl.svg" />
-    <link rel="apple-touch-icon" href="/hoodl.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>HOODL — Permissionless index tokens</title>
+    <meta
+      name="description"
+      content="Create, discover, mint, and redeem fully backed ERC-20 index tokens for tokenized stocks and crypto on Robinhood Chain."
+    />
+    <meta name="application-name" content="HOODL" />
+    <meta name="author" content="HOODL" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#10110c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f7f1" media="(prefers-color-scheme: light)" />
+
+    <link rel="canonical" href="https://hoodl.finance/" />
+    <link rel="icon" type="image/svg+xml" href="/hoodl.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/hoodl.svg" color="#ccff00" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="HOODL" />
+    <meta property="og:url" content="https://hoodl.finance/" />
+    <meta property="og:title" content="HOODL — Permissionless index tokens" />
+    <meta
+      property="og:description"
+      content="Create, discover, mint, and redeem fully backed ERC-20 index tokens for tokenized stocks and crypto on Robinhood Chain."
+    />
+    <meta property="og:image" content="https://hoodl.finance/og-image.png" />
+    <meta property="og:image:secure_url" content="https://hoodl.finance/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="HOODL permissionless index tokens on Robinhood Chain" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:domain" content="hoodl.finance" />
+    <meta name="twitter:url" content="https://hoodl.finance/" />
+    <meta name="twitter:title" content="HOODL — Permissionless index tokens" />
+    <meta
+      name="twitter:description"
+      content="Create, discover, mint, and redeem fully backed ERC-20 index tokens for tokenized stocks and crypto on Robinhood Chain."
+    />
+    <meta name="twitter:image" content="https://hoodl.finance/og-image.png" />
+    <meta name="twitter:image:alt" content="HOODL permissionless index tokens on Robinhood Chain" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://hoodl.finance/#website",
+            "url": "https://hoodl.finance/",
+            "name": "HOODL",
+            "description": "Permissionless, fully backed ERC-20 index tokens for tokenized stocks and crypto.",
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://hoodl.finance/#application",
+            "url": "https://hoodl.finance/",
+            "name": "HOODL",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript. An EVM-compatible wallet is required for transactions.",
+            "description": "Create, discover, mint, and redeem fully backed ERC-20 index tokens on Robinhood Chain.",
+            "featureList": [
+              "Discover on-chain index tokens",
+              "Create fixed-basket ERC-20 indexes",
+              "Mint and redeem indexes in kind",
+              "Buy and sell supported indexes with USDG",
+              "Read live on-chain net asset value"
+            ],
+            "isPartOf": { "@id": "https://hoodl.finance/#website" }
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://rpc.mainnet.chain.robinhood.com" crossorigin />
+    <link rel="dns-prefetch" href="https://robinhoodchain.blockscout.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
@@ -15,6 +98,7 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>HOODL needs JavaScript to read live Robinhood Chain data and connect an EVM wallet.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
