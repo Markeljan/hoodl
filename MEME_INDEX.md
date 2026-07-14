@@ -12,8 +12,17 @@ Five chain-born outlaws. One fully backed bag.
 - Creator fees: maximum `100 bps` on mint and `100 bps` on redeem
 - Metadata image: [`https://hoodl.finance/tokens/hmeme.png`](https://hoodl.finance/tokens/hmeme.png)
 - Source: verified on Robinhood Chain Blockscout
+- Periphery: live on-chain NAV plus USDG zap-in and zap-out for all five components
 
 The contract starts with zero supply. The first holder mints shares by approving and depositing the exact five-token basket; the contract does not pre-mint unbacked shares.
+
+## NAV and USDG zaps
+
+The core index never needs a price or liquidity pool to mint or redeem in-kind. The optional `IndexLens` and `IndexZap` periphery contracts are now configured for hookless Uniswap v4 token/USDG pools for every component. At configuration block `9822314`, the Lens reported `5.047966 USDG` per hMEME.
+
+The configured pool fees are 0.50% CASHCAT, 1.70% ARROW, 3.64% HOODRAT, 2.30% WISHBONE, and 3.00% HOODIE. These secondary USDG pools are thinner than the tokens' primary WETH pools, so larger zaps can experience material price impact or revert against the user's maximum-input/minimum-output limit. Lens values are manipulable spot prices intended for display, not settlement or collateral risk decisions.
+
+The full route set was tested on a mainnet fork: a one-share zap-in spent `4.993239 USDG`, issued `0.987 hMEME` after the 1.30% mint fee, and a complete zap-out returned `4.659305 USDG`. The difference includes index fees, pool fees, and price impact. Direct in-kind redemption remains independent of all pools.
 
 ## Thesis
 
@@ -76,6 +85,14 @@ Re-run the complete on-chain, receipt, source, metadata, and hosted-image valida
 ```sh
 cd web
 bun run verify:hmeme
+```
+
+Simulate or idempotently re-run the Lens and Zap configuration with:
+
+```sh
+cd web
+bun run configure:hmeme
+BROADCAST=true bun run configure:hmeme
 ```
 
 ## Sources

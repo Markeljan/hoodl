@@ -230,6 +230,50 @@
         "hooks": "0x0000000000000000000000000000000000000000"
       },
       "tokenIsCurrency0": true
+    },
+    "arrow": {
+      "source": "POOL_USDG",
+      "poolKey": {
+        "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "currency1": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+        "fee": 17000,
+        "tickSpacing": 340,
+        "hooks": "0x0000000000000000000000000000000000000000"
+      },
+      "tokenIsCurrency0": false
+    },
+    "hoodrat": {
+      "source": "POOL_USDG",
+      "poolKey": {
+        "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "currency1": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+        "fee": 36400,
+        "tickSpacing": 728,
+        "hooks": "0x0000000000000000000000000000000000000000"
+      },
+      "tokenIsCurrency0": false
+    },
+    "wishbone": {
+      "source": "POOL_USDG",
+      "poolKey": {
+        "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "currency1": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+        "fee": 23000,
+        "tickSpacing": 460,
+        "hooks": "0x0000000000000000000000000000000000000000"
+      },
+      "tokenIsCurrency0": false
+    },
+    "hoodie": {
+      "source": "POOL_USDG",
+      "poolKey": {
+        "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "currency1": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+        "fee": 30000,
+        "tickSpacing": 600,
+        "hooks": "0x0000000000000000000000000000000000000000"
+      },
+      "tokenIsCurrency0": false
     }
   },
   "zapPools": {
@@ -252,6 +296,34 @@
       "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
       "fee": 5000,
       "tickSpacing": 100,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "arrow": {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+      "fee": 17000,
+      "tickSpacing": 340,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "hoodrat": {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+      "fee": 36400,
+      "tickSpacing": 728,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "wishbone": {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+      "fee": 23000,
+      "tickSpacing": 460,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    "hoodie": {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+      "fee": 30000,
+      "tickSpacing": 600,
       "hooks": "0x0000000000000000000000000000000000000000"
     }
   },
@@ -315,6 +387,55 @@
       "gasUsed": "2587792",
       "effectiveGasPriceWei": "52892000",
       "transactionCostWei": "136873494464000"
+    },
+    {
+      "nonce": 22,
+      "purpose": "Configure ARROW lens price source",
+      "hash": "0xc1555f6e2d5670d783f645614314c850ad3670198b32dafe21b842477ff8f51f",
+      "blockNumber": 9822181
+    },
+    {
+      "nonce": 23,
+      "purpose": "Configure ARROW zap pool",
+      "hash": "0x189789f31f5ef5fbd430eb797e3ce824ba4743976da8e4296f655a1b64ae5fc5",
+      "blockNumber": 9822199
+    },
+    {
+      "nonce": 24,
+      "purpose": "Configure HOODRAT lens price source",
+      "hash": "0x1a8690a66221392db86b7b188b6922575f1ce69d32944a5c2f7ac52a7508c6a4",
+      "blockNumber": 9822219
+    },
+    {
+      "nonce": 25,
+      "purpose": "Configure HOODRAT zap pool",
+      "hash": "0xac85d4f4058c8681b8ffc5a0f7a7bca2d17fe0296376c86ab2a2c1507f827b8a",
+      "blockNumber": 9822237
+    },
+    {
+      "nonce": 26,
+      "purpose": "Configure WISHBONE lens price source",
+      "hash": "0x9d78e06a5d037dc7bfe31040b96b4be82b69ff91362a249f38891b03c9714f9a",
+      "blockNumber": 9822255
+    },
+    {
+      "nonce": 27,
+      "purpose": "Configure WISHBONE zap pool",
+      "hash": "0x5ee24fcf10abc42f6a1c15bc3a4ec208876437933c77214239adf81031a63e73",
+      "blockNumber": 9822280
+    },
+    {
+      "nonce": 28,
+      "purpose": "Configure HOODIE lens price source",
+      "hash": "0xa4b4fcb10906ea6a2218529e6457d3e0b8c204d7a4de64024dfa4a0c9c4c6a00",
+      "blockNumber": 9822298
+    },
+    {
+      "nonce": 29,
+      "purpose": "Configure HOODIE zap pool",
+      "hash": "0xe4fbefb3d136b8d549d23bc2149cf95a1519712325228bc22d09b2a892e7887b",
+      "blockNumber": 9822314,
+      "configuredAt": "2026-07-14T20:36:52.000Z"
     }
   ],
   "validation": {
@@ -327,6 +448,13 @@
       "passed": 3,
       "failed": 0,
       "skipped": 0
+    },
+    "hmemePeriphery": {
+      "navPerShareUsdgRawAtConfiguration": "5047966",
+      "allLensSourcesConfigured": true,
+      "allZapRoutesConfigured": true,
+      "bidirectionalQuotesValidated": true,
+      "forkedZapRoundTripValidated": true
     },
     "postDeploymentRpcStateChecked": true
   }

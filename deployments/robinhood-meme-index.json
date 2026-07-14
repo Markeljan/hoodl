@@ -106,6 +106,111 @@
       "primaryPoolUrl": "https://dexscreener.com/robinhood/0x590eb1069a71fe72e3470f094c324513da3691987868a2b355fd8f29713d889b"
     }
   ],
+  "periphery": {
+    "status": "live",
+    "lens": "0x6F379d544597EBA7A19e13B5b589E832975b5EF4",
+    "zap": "0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2",
+    "poolManager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+    "stateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+    "quoter": "0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94",
+    "quoteToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "routes": [
+      {
+        "symbol": "CASHCAT",
+        "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+        "poolId": "0xee0d95c4644e0847eca78d5f5333abe1ab798b159fdd01712327258a755d4423",
+        "poolKey": {
+          "currency0": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+          "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "fee": 5000,
+          "tickSpacing": 100,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "tokenIsCurrency0": true,
+        "lensTransactionHash": "0x555e568aa1b96641d6de1dd1e2a6ef16ad76277d57cef3c617004d01e73a0243",
+        "zapTransactionHash": "0x4b188b4717883fedcc5cf2af8ed5db57f240567c9f5545bc9932b60dc2a4e859"
+      },
+      {
+        "symbol": "ARROW",
+        "token": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+        "poolId": "0x56e82d7cc8ee239f042b6f9b0b1c112ed7f716eb187ce69ec4295210e0e5af57",
+        "poolKey": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+          "fee": 17000,
+          "tickSpacing": 340,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "tokenIsCurrency0": false,
+        "lensTransactionHash": "0xc1555f6e2d5670d783f645614314c850ad3670198b32dafe21b842477ff8f51f",
+        "zapTransactionHash": "0x189789f31f5ef5fbd430eb797e3ce824ba4743976da8e4296f655a1b64ae5fc5"
+      },
+      {
+        "symbol": "HOODRAT",
+        "token": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+        "poolId": "0x6edabde31bed02bfd31a1e2b2babca2c9f8b1fcf189a0dd6ddf09e028c97f03b",
+        "poolKey": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+          "fee": 36400,
+          "tickSpacing": 728,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "tokenIsCurrency0": false,
+        "lensTransactionHash": "0x1a8690a66221392db86b7b188b6922575f1ce69d32944a5c2f7ac52a7508c6a4",
+        "zapTransactionHash": "0xac85d4f4058c8681b8ffc5a0f7a7bca2d17fe0296376c86ab2a2c1507f827b8a"
+      },
+      {
+        "symbol": "WISHBONE",
+        "token": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+        "poolId": "0x72c85f95eeaab212a7d67682ba0777bb448cfc6a5a99b74db899d339f546fe96",
+        "poolKey": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+          "fee": 23000,
+          "tickSpacing": 460,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "tokenIsCurrency0": false,
+        "lensTransactionHash": "0x9d78e06a5d037dc7bfe31040b96b4be82b69ff91362a249f38891b03c9714f9a",
+        "zapTransactionHash": "0x5ee24fcf10abc42f6a1c15bc3a4ec208876437933c77214239adf81031a63e73"
+      },
+      {
+        "symbol": "HOODIE",
+        "token": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+        "poolId": "0xa25585f4b587219bf3f86639d1cd226053d9658b3ff549a4ad1eec0254d318cf",
+        "poolKey": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+          "fee": 30000,
+          "tickSpacing": 600,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "tokenIsCurrency0": false,
+        "lensTransactionHash": "0xa4b4fcb10906ea6a2218529e6457d3e0b8c204d7a4de64024dfa4a0c9c4c6a00",
+        "zapTransactionHash": "0xe4fbefb3d136b8d549d23bc2149cf95a1519712325228bc22d09b2a892e7887b"
+      }
+    ],
+    "forkValidation": {
+      "sourceBlock": 9818374,
+      "navPerShareUsdgRaw": "4881136",
+      "grossShares": "1000000000000000000",
+      "maxUsdgInRaw": "6000000",
+      "usdgSpentRaw": "4993239",
+      "netSharesOutRaw": "987000000000000000",
+      "zapRedeemUsdgOutRaw": "4659305",
+      "roundTripSucceeded": true
+    },
+    "liveValidation": {
+      "configuredAt": "2026-07-14T20:36:52.000Z",
+      "firstConfigurationBlock": 9822181,
+      "lastConfigurationBlock": 9822314,
+      "navPerShareUsdgRaw": "5047966",
+      "allLensSourcesConfigured": true,
+      "allZapRoutesConfigured": true,
+      "allRoutesQuotedInBothDirections": true
+    }
+  },
   "verification": {
     "contractAddress": "0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5",
     "creationTransactionHash": "0x4f985be7a2b97c1b50a0f43d37fd3e43a8fd6c17feb0fc1d14e5f13d4380ab5e",
