@@ -3,6 +3,7 @@ import { shortAddress } from '../model'
 import type { IndexView, Tab } from '../model'
 import { hrefForIndex, hrefForScreen } from '../routes'
 import AppLink from './AppLink'
+import MetadataViewer from './MetadataViewer'
 
 export interface BasketLine {
   sym: string
@@ -193,8 +194,7 @@ export default function Detail(p: DetailProps) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 11 }}>
             <button type="button" onClick={p.onShare} className="hv-chip" style={{ padding: '6px 10px', border: '1px solid var(--border-strong)', borderRadius: 8, background: 'var(--surface)', color: 'var(--text-2)', cursor: 'pointer', font: "600 12px 'Space Grotesk',sans-serif" }}>Copy share link</button>
-            {sel.tokenURI && <a href={sel.tokenURI} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>Open tokenURI ↗</a>}
-            {sel.contractURI && <a href={sel.contractURI} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>Open contractURI ↗</a>}
+            {(sel.tokenURI || sel.contractURI) && <MetadataViewer name={sel.name} symbol={sel.symbol} tokenURI={sel.tokenURI} contractURI={sel.contractURI} />}
           </div>
         </div>
         <div className="detail-price">
