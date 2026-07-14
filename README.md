@@ -59,6 +59,7 @@ Deployed on Robinhood Chain mainnet (chain ID 4663) in block `7711193`:
 - IndexLens: `0x6F379d544597EBA7A19e13B5b589E832975b5EF4`
 - IndexZap: `0x717500F9BA2BFF85C047fEaCb3F98F7a667BfdE2`
 - hAI: `0x9f5e540829A647C6BFC02066888Ee6f9E43708FD`
+- [hMEME](MEME_INDEX.md): `0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5`
 
 Frontend-ready addresses, ABIs, configuration, and transaction records are in
 [`deployments/robinhood-mainnet.json`](deployments/robinhood-mainnet.json).

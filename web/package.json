@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "launch:hmeme": "bun --env-file=../.env scripts/create-meme-index.ts",
     "lint": "oxlint",
     "test": "bun test",
+    "verify:hmeme": "bun scripts/verify-meme-index.ts",
     "preview": "vite preview"
   },
   "dependencies": {

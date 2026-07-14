@@ -4,6 +4,17 @@ Five chain-born outlaws. One fully backed bag.
 
 `hMEME` is a fixed, equal-value-at-launch basket of the five established Robinhood Chain memecoins that passed the launch screen on July 14, 2026: CASHCAT, ARROW, HOODRAT, WISHBONE, and HOODIE. One share is backed by roughly $1 of each token at the recorded snapshot, for a launch NAV of approximately $5.
 
+## Live deployment
+
+- Contract: [`0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5`](https://robinhoodchain.blockscout.com/address/0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5)
+- Creation transaction: [`0x4f985b…80ab5e`](https://robinhoodchain.blockscout.com/tx/0x4f985be7a2b97c1b50a0f43d37fd3e43a8fd6c17feb0fc1d14e5f13d4380ab5e)
+- Block: `9811376` at `2026-07-14T20:18:38Z`
+- Creator fees: maximum `100 bps` on mint and `100 bps` on redeem
+- Metadata image: [`https://hoodl.finance/tokens/hmeme.png`](https://hoodl.finance/tokens/hmeme.png)
+- Source: verified on Robinhood Chain Blockscout
+
+The contract starts with zero supply. The first holder mints shares by approving and depositing the exact five-token basket; the contract does not pre-mint unbacked shares.
+
 ## Thesis
 
 Robinhood Chain's earliest product-market fit is culture. Memecoins dominate the chain's open liquidity and activity while the RWA market is still forming. `hMEME` turns that fragmented attention into one composable ERC-20 without pretending the memes are less speculative than they are.
@@ -41,6 +52,31 @@ ARROW and HOODRAT currently report zero buy and sell tax. HOODIE's launch balanc
 - Image: `https://hoodl.finance/tokens/hmeme.png`
 - Meme line: `5 OUTLAWS · 1 BAG`
 - Independence: not affiliated with or endorsed by Robinhood Markets, Inc.
+
+## Reproducible launch
+
+The Bun signer defaults to simulation and reads the ignored root `.env`:
+
+```sh
+cd web
+bun run launch:hmeme
+```
+
+Broadcast only after the simulation succeeds:
+
+```sh
+cd web
+BROADCAST=true bun run launch:hmeme
+```
+
+The script rejects any key that does not derive to the recorded project deployer and exits without a transaction when an index with the same name and symbol is already in the factory registry.
+
+Re-run the complete on-chain, receipt, source, metadata, and hosted-image validation with:
+
+```sh
+cd web
+bun run verify:hmeme
+```
 
 ## Sources
 

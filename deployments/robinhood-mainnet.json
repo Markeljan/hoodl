@@ -65,6 +65,16 @@
       "creationTransactionHash": "0x06351c87b62f92c006c7e93981b65a78a30eea3e68a9e93d4560440c29b4ec77",
       "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9f5e540829A647C6BFC02066888Ee6f9E43708FD",
       "verified": true
+    },
+    "hmeme": {
+      "name": "Hood's Most Wanted",
+      "symbol": "hMEME",
+      "address": "0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5",
+      "abi": "./abis/IndexToken.json",
+      "source": "../src/IndexToken.sol",
+      "creationTransactionHash": "0x4f985be7a2b97c1b50a0f43d37fd3e43a8fd6c17feb0fc1d14e5f13d4380ab5e",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x1Da8FbeB89e7b4517E426d2BDbE811BF4CEbB7f5",
+      "verified": true
     }
   },
   "roles": {
@@ -72,7 +82,8 @@
     "protocolTreasury": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
     "lensOwner": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
     "zapOwner": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
-    "haiCreator": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271"
+    "haiCreator": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "hmemeCreator": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271"
   },
   "feesBps": {
     "protocolMint": 30,
@@ -80,7 +91,11 @@
     "haiCreatorMint": 20,
     "haiCreatorRedeem": 10,
     "haiTotalMint": 50,
-    "haiTotalRedeem": 20
+    "haiTotalRedeem": 20,
+    "hmemeCreatorMint": 100,
+    "hmemeCreatorRedeem": 100,
+    "hmemeTotalMint": 130,
+    "hmemeTotalRedeem": 110
   },
   "tokens": {
     "usdg": {
@@ -101,6 +116,26 @@
     "cashcat": {
       "symbol": "CASHCAT",
       "address": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "decimals": 18
+    },
+    "arrow": {
+      "symbol": "ARROW",
+      "address": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+      "decimals": 18
+    },
+    "hoodrat": {
+      "symbol": "HOODRAT",
+      "address": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+      "decimals": 18
+    },
+    "wishbone": {
+      "symbol": "WISHBONE",
+      "address": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+      "decimals": 18
+    },
+    "hoodie": {
+      "symbol": "HOODIE",
+      "address": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
       "decimals": 18
     }
   },
@@ -133,6 +168,44 @@
         "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
         "rawUnitsPerShare": "60000000000000000000",
         "displayUnitsPerShare": "60"
+      }
+    ]
+  },
+  "hmeme": {
+    "shareDecimals": 18,
+    "imageURI": "https://hoodl.finance/tokens/hmeme.png",
+    "launchNavUsd": "5.00",
+    "marketSnapshotAt": "2026-07-14T20:05:39.601Z",
+    "components": [
+      {
+        "symbol": "CASHCAT",
+        "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+        "rawUnitsPerShare": "6333122229259024699",
+        "displayUnitsPerShare": "6.333122229259024699"
+      },
+      {
+        "symbol": "ARROW",
+        "token": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+        "rawUnitsPerShare": "719424460431654676",
+        "displayUnitsPerShare": "0.719424460431654676"
+      },
+      {
+        "symbol": "HOODRAT",
+        "token": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+        "rawUnitsPerShare": "120845921450151057401",
+        "displayUnitsPerShare": "120.845921450151057401"
+      },
+      {
+        "symbol": "WISHBONE",
+        "token": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+        "rawUnitsPerShare": "144029958231312112919",
+        "displayUnitsPerShare": "144.029958231312112919"
+      },
+      {
+        "symbol": "HOODIE",
+        "token": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+        "rawUnitsPerShare": "73583517292126563649742",
+        "displayUnitsPerShare": "73583.517292126563649742"
       }
     ]
   },
@@ -232,6 +305,16 @@
       "nonce": 9,
       "purpose": "Create hAI through IndexFactory",
       "hash": "0x06351c87b62f92c006c7e93981b65a78a30eea3e68a9e93d4560440c29b4ec77"
+    },
+    {
+      "nonce": 21,
+      "purpose": "Create hMEME through IndexFactory",
+      "hash": "0x4f985be7a2b97c1b50a0f43d37fd3e43a8fd6c17feb0fc1d14e5f13d4380ab5e",
+      "blockNumber": 9811376,
+      "createdAt": "2026-07-14T20:18:38.000Z",
+      "gasUsed": "2587792",
+      "effectiveGasPriceWei": "52892000",
+      "transactionCostWei": "136873494464000"
     }
   ],
   "validation": {
