@@ -60,6 +60,16 @@ a:hover {
 input::placeholder {
   color: var(--text-3);
 }
+button,
+select,
+textarea,
+input {
+  font-family: inherit;
+}
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.48;
+}
 ::selection {
   background: var(--neon);
   color: var(--on-neon);
@@ -229,6 +239,101 @@ input::placeholder {
   gap: 22px;
   align-items: start;
 }
+.form-layout {
+  display: grid;
+  gap: 18px;
+  max-width: 920px;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.component-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 0.35fr) 90px;
+  gap: 10px;
+}
+.form-field {
+  display: grid;
+  gap: 7px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.primary-button,
+.secondary-button {
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: 600 13.5px 'Space Grotesk', sans-serif;
+}
+.primary-button {
+  border: none;
+  background: var(--neon);
+  color: var(--on-neon);
+}
+.secondary-button {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+}
+.text-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 12px;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.summary-grid > div {
+  display: grid;
+  gap: 5px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+}
+.summary-grid span,
+.summary-grid small {
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+.summary-grid strong {
+  color: var(--text);
+  font: 600 20px 'Space Grotesk', sans-serif;
+}
+.two-panel-grid,
+.operator-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.activity-row:hover {
+  background: var(--surface-2);
+}
+.activity-kind {
+  min-width: 76px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: var(--neon-dim);
+  color: var(--text);
+  text-align: center;
+  font: 600 10px 'JetBrains Mono', monospace;
+}
 
 .footer-inner {
   max-width: 1180px;
@@ -243,7 +348,9 @@ input::placeholder {
 
 @media (max-width: 1020px) {
   .detail-grid,
-  .portfolio-grid {
+  .portfolio-grid,
+  .two-panel-grid,
+  .operator-grid {
     grid-template-columns: minmax(0, 1fr);
   }
   .trade-panel {
@@ -289,8 +396,14 @@ input::placeholder {
     grid-template-columns: 1fr;
   }
   .onchain-grid,
-  .transfer-grid {
+  .transfer-grid,
+  .field-grid,
+  .component-grid {
     grid-template-columns: 1fr;
+  }
+  .activity-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
   .detail-price {
     text-align: left;

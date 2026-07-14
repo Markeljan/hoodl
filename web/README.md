@@ -19,12 +19,19 @@ the network when the wallet reports that it is unknown.
 ## Implemented contract flows
 
 - Discover indexes from `IndexFactory.indexesCount` and `allIndexes`.
-- Read index metadata, immutable fees, total supply, components, token metadata, and live NAV.
-- Read connected-wallet hAI and USDG balances.
+- Detect per-component Lens valuation and Zap routing support before exposing optional actions.
+- Create indexes with the factory's full parameters: composition, units, creator fees, description, and image URI.
+- Read index metadata, immutable fee splits, total supply, components, token/contract metadata, and live NAV provenance.
+- Read connected-wallet balances for every registered index plus USDG.
 - Buy with USDG through `IndexZap.zapMint`, including approval and a 3% maximum-spend buffer.
+- Sell to USDG through `IndexZap.zapRedeem`, using per-pool V4Quoter output and an enforced minimum.
 - Mint in-kind using `previewMint`, exact component approvals, and `IndexToken.mint`.
 - Redeem directly to the component basket with `IndexToken.redeem`.
-- Transfer hAI with the ERC-20 `transfer` function.
+- Send direct mint/redeem output to an optional recipient.
+- Transfer any held index with the ERC-20 `transfer` function.
+- Manage creator metadata and rotate the creator-fee recipient.
+- Read factory, index, and Zap events into a protocol activity and creator analytics feed.
+- Use a separately owner-gated operator console for factory economics, treasury, Lens/sequencer configuration, Zap pools, and ownership.
 
 Every write is simulated before it is sent, then tracked until its Robinhood Chain receipt is
 confirmed. Transaction links point to Blockscout.

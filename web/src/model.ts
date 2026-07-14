@@ -1,8 +1,18 @@
 import { formatUnits, parseUnits } from 'viem'
 import type { Address } from 'viem'
 
-export type Screen = 'landing' | 'discover' | 'detail' | 'portfolio'
-export type Tab = 'buy' | 'mint' | 'redeem'
+export type Screen = 'landing' | 'discover' | 'create' | 'detail' | 'portfolio' | 'creator' | 'activity' | 'operator'
+export type Tab = 'buy' | 'mint' | 'redeem' | 'sell'
+
+export type LensSource = 'USDG' | 'CHAINLINK' | 'POOL_USDG' | 'NONE'
+
+export interface PoolView {
+  currency0: Address
+  currency1: Address
+  fee: number
+  tickSpacing: number
+  hooks: Address
+}
 
 export interface Row {
   key: string
@@ -21,6 +31,13 @@ export interface Row {
   weight: number
   weightLabel: string
   barWidth: string
+  lensSource: LensSource
+  lensSourceLabel: string
+  lensFeed: Address | null
+  maxStaleness: bigint | null
+  lensPool: PoolView | null
+  zapRouted: boolean
+  zapPool: PoolView | null
 }
 
 export interface IndexView {
@@ -29,6 +46,10 @@ export interface IndexView {
   name: string
   symbol: string
   tagline: string
+  description: string
+  imageURI: string
+  tokenURI: string
+  contractURI: string
   flagship: boolean
   creator: Address
   creatorLabel: string
@@ -50,6 +71,25 @@ export interface IndexView {
   rows: Row[]
   unitsNote: string
   segments: { color: string; width: string }[]
+  canValue: boolean
+  canZapMint: boolean
+  canZapRedeem: boolean
+  capabilitySummary: string
+}
+
+export type ActivityKind = 'created' | 'minted' | 'redeemed' | 'zap-mint' | 'zap-redeem' | 'creator' | 'metadata'
+
+export interface ActivityItem {
+  id: string
+  kind: ActivityKind
+  blockNumber: bigint
+  transactionHash: `0x${string}`
+  index: Address
+  actor: Address | null
+  title: string
+  detail: string
+  sharesRaw?: bigint
+  usdgRaw?: bigint
 }
 
 const TOKEN_COLORS: Record<string, string> = {

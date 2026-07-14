@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { shortAddress } from '../model'
 import type { IndexView, Tab } from '../model'
 
 export interface BasketLine {
@@ -15,6 +16,7 @@ interface DetailProps {
   setTab: (t: Tab) => void
   blockNumber: bigint | null
   explorerUrl: string
+  treasuryLabel: string
   walletReady: boolean
   pendingAction: string | null
   lastTxUrl: string | null
@@ -30,13 +32,26 @@ interface DetailProps {
   onMintShares: (v: string) => void
   mintBasket: BasketLine[]
   mintNetLabel: string
+  mintRecipient: string
+  onMintRecipient: (v: string) => void
   onMint: () => void
   redeemShares: string
   onRedeemShares: (v: string) => void
   redeemBasket: BasketLine[]
   indexBalanceLabel: string
   redeemFeeLabel: string
+  redeemRecipient: string
+  onRedeemRecipient: (v: string) => void
   onRedeem: () => void
+  sellShares: string
+  onSellShares: (v: string) => void
+  sellQuoteLabel: string
+  sellMinLabel: string
+  sellSlippage: string
+  onSellSlippage: (v: string) => void
+  sellQuoting: boolean
+  onSellQuote: () => void
+  onSell: () => void
 }
 
 const inputRowStyle: CSSProperties = {
@@ -118,7 +133,7 @@ function Capability({ title, sub }: { title: string; sub: string }) {
 
 export default function Detail(p: DetailProps) {
   const { sel, tab } = p
-  const tabs: Tab[] = ['buy', 'mint', 'redeem']
+  const tabs: Tab[] = ['buy', 'mint', 'redeem', 'sell']
   return (
     <main className="page page--detail">
       <button
@@ -145,6 +160,7 @@ export default function Detail(p: DetailProps) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ minWidth: 280 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {sel.imageURI && <img src={sel.imageURI} alt={`${sel.symbol} artwork`} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)' }} />}
             <span
               style={{
                 display: 'grid',
@@ -164,12 +180,13 @@ export default function Detail(p: DetailProps) {
           </div>
           <p style={{ margin: '12px 0 0', maxWidth: '52ch', fontSize: 15, lineHeight: 1.55, color: 'var(--text-2)' }}>{sel.tagline}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 15 }}>
-            {[sel.kindSummary, `Creator ${sel.creator}`, `${sel.supplyLabel} shares`].map((chip) => (
+            {[sel.kindSummary, `Creator ${sel.creator}`, `${sel.supplyLabel} shares`, sel.capabilitySummary].map((chip) => (
               <span key={chip} style={{ fontSize: 12.5, color: 'var(--text-2)', border: '1px solid var(--border)', borderRadius: 99, padding: '4px 11px' }}>
                 {chip}
               </span>
             ))}
           </div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>{sel.tokenURI && <a href={sel.tokenURI} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 11, fontSize: 12 }}>Open tokenURI ↗</a>}{sel.contractURI && <a href={sel.contractURI} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 11, fontSize: 12 }}>Open contractURI ↗</a>}</div>
         </div>
         <div className="detail-price">
           <div style={{ font: "700 40px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>{sel.navLabel}</div>
@@ -256,6 +273,10 @@ export default function Detail(p: DetailProps) {
                     <div style={{ font: "500 12px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>
                       {r.unitsLabel} {r.sym}
                     </div>
+                    <div style={{ marginTop: 3, fontSize: 11.5, color: 'var(--text-3)' }}>{r.lensSourceLabel} · {r.zapRouted ? 'Zap routed' : 'in-kind only'}</div>
+                    {r.lensFeed && <div style={{ marginTop: 2, font: "500 10.5px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>Feed {shortAddress(r.lensFeed)} </div>}
+                    {r.lensPool && <div style={{ marginTop: 2, font: "500 10.5px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>Lens pool · {r.lensPool.fee / 10000}% fee · spacing {r.lensPool.tickSpacing}</div>}
+                    {r.zapPool && <div style={{ marginTop: 2, font: "500 10.5px 'JetBrains Mono',monospace", color: 'var(--text-3)' }}>Zap pool · {r.zapPool.fee / 10000}% fee · spacing {r.zapPool.tickSpacing}</div>}
                   </div>
                 </div>
                 <div className="comp-price" style={{ textAlign: 'right', font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>{r.priceLabel}</div>
@@ -279,6 +300,11 @@ export default function Detail(p: DetailProps) {
               <Capability title="ERC-20" sub="Standard balance and allowance surface" />
               <Capability title="Redeem" sub="Exit directly to the component basket" />
             </div>
+          </div>
+          <div className="summary-grid" style={{ marginTop: 16 }}>
+            <div><span>Mint fees</span><strong>{sel.fMintLabel}</strong><small>{sel.protocolMintFeeBps} protocol + {sel.creatorMintFeeBps} creator bps</small></div>
+            <div><span>Redeem fees</span><strong>{sel.fRedeemLabel}</strong><small>{sel.protocolRedeemFeeBps} protocol + {sel.creatorRedeemFeeBps} creator bps</small></div>
+            <div><span>Protocol treasury</span><strong style={{ fontSize: 15 }}>{p.treasuryLabel}</strong><small>Protocol fee-share recipient</small></div>
           </div>
         </div>
 
@@ -363,11 +389,11 @@ export default function Detail(p: DetailProps) {
                 <span>Max spend</span>
                 <span style={{ color: 'var(--text-2)' }}>{p.buyMaxLabel}</span>
               </div>
-              <button disabled={p.pendingAction != null} onClick={p.onBuy} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction ? 0.55 : 1, cursor: p.pendingAction ? 'wait' : 'pointer' }}>
+              <button disabled={p.pendingAction != null || !sel.canZapMint || !sel.canValue} onClick={p.onBuy} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction || !sel.canZapMint || !sel.canValue ? 0.55 : 1, cursor: p.pendingAction ? 'wait' : 'pointer' }}>
                 {p.pendingAction ?? (p.walletReady ? `Buy ${sel.symbol}` : 'Connect wallet & buy')}
               </button>
               <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5 }}>
-                <span style={{ color: 'var(--neon)' }}>●</span> The quote reserves a 3% routing buffer; the zap refunds unspent USDG.
+                <span style={{ color: sel.canZapMint && sel.canValue ? 'var(--neon)' : 'var(--neg)' }}>●</span> {sel.canZapMint && sel.canValue ? 'The quote reserves a 3% routing buffer; the zap refunds unspent USDG.' : 'USDG buying is unavailable because NAV or at least one component route is missing. In-kind mint remains available.'}
               </p>
             </div>
           )}
@@ -400,6 +426,8 @@ export default function Detail(p: DetailProps) {
                 <span>Mint fee</span>
                 <span style={{ color: 'var(--text-2)' }}>{sel.fMintLabel}</span>
               </div>
+              <label style={{ ...labelStyle, display: 'block', marginTop: 14 }}>Recipient (optional)</label>
+              <div style={{ ...inputRowStyle, padding: '9px 12px' }}><input value={p.mintRecipient} onChange={(event) => p.onMintRecipient(event.target.value)} placeholder="Connected wallet" style={{ ...inputStyle, fontSize: 13 }} /></div>
               <button disabled={p.pendingAction != null} onClick={p.onMint} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction ? 0.55 : 1, cursor: p.pendingAction ? 'wait' : 'pointer' }}>
                 {p.pendingAction ?? (p.walletReady ? 'Approve basket & mint' : 'Connect wallet & mint')}
               </button>
@@ -433,6 +461,8 @@ export default function Detail(p: DetailProps) {
                 <span>Redeem fee (in shares)</span>
                 <span style={{ color: 'var(--text-2)' }}>{p.redeemFeeLabel}</span>
               </div>
+              <label style={{ ...labelStyle, display: 'block', marginTop: 14 }}>Basket recipient (optional)</label>
+              <div style={{ ...inputRowStyle, padding: '9px 12px' }}><input value={p.redeemRecipient} onChange={(event) => p.onRedeemRecipient(event.target.value)} placeholder="Connected wallet" style={{ ...inputStyle, fontSize: 13 }} /></div>
               <button
                 disabled={p.pendingAction != null}
                 onClick={p.onRedeem}
@@ -457,6 +487,19 @@ export default function Detail(p: DetailProps) {
                   <strong style={{ fontWeight: 600 }}>Ungateable.</strong> Redemption needs zero DEX liquidity and can never be paused.
                 </p>
               </div>
+            </div>
+          )}
+
+          {tab === 'sell' && (
+            <div>
+              <label style={labelStyle}>Shares to sell</label>
+              <div style={inputRowStyle}><input type="text" inputMode="decimal" value={p.sellShares} onChange={(event) => p.onSellShares(event.target.value)} style={inputStyle} /><span style={symbolChipStyle}>{sel.symbol}</span></div>
+              <div style={{ marginTop: 6, textAlign: 'right', fontSize: 11.5, color: 'var(--text-3)' }}>Wallet: {p.indexBalanceLabel} {sel.symbol}</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'end', marginTop: 14 }}><label className="form-field" style={{ flex: 1 }}><span>Slippage tolerance · %</span><input value={p.sellSlippage} onChange={(event) => p.onSellSlippage(event.target.value)} inputMode="decimal" style={{ ...inputRowStyle, width: '100%' }} /></label><button disabled={p.sellQuoting || !sel.canZapRedeem} onClick={p.onSellQuote} className="secondary-button">{p.sellQuoting ? 'Quoting…' : 'Refresh quote'}</button></div>
+              <div style={receiveBoxStyle}><span style={{ font: "700 24px 'Space Grotesk',sans-serif" }}>{p.sellQuoteLabel}</span><span style={{ font: "600 14px 'Space Grotesk',sans-serif", color: 'var(--text-2)' }}>USDG estimated</span></div>
+              <div style={feeRowStyle}><span>Minimum received</span><span style={{ color: 'var(--text-2)' }}>{p.sellMinLabel} USDG</span></div>
+              <button disabled={p.pendingAction != null || p.sellQuoting || !sel.canZapRedeem || p.sellQuoteLabel === '—'} onClick={p.onSell} className="hv-lift-sm" style={{ ...primaryBtnStyle, opacity: p.pendingAction || !sel.canZapRedeem ? 0.55 : 1 }}>{p.pendingAction ?? (p.walletReady ? `Sell ${sel.symbol} to USDG` : 'Connect wallet & sell')}</button>
+              <p style={{ margin: '12px 0 0', fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5 }}><span style={{ color: sel.canZapRedeem ? 'var(--neon)' : 'var(--neg)' }}>●</span> {sel.canZapRedeem ? 'The quote calls the deployed V4Quoter for every executable component route. The minimum output is enforced by IndexZap.' : 'Zap-out is unavailable because at least one component lacks a USDG pool. Redeem to the basket instead.'}</p>
             </div>
           )}
         </div>
