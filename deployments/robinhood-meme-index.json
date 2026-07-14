@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "network": {
+    "name": "Robinhood Chain",
+    "chainId": 4663
+  },
+  "index": {
+    "name": "Hood's Most Wanted",
+    "symbol": "hMEME",
+    "status": "ready-to-launch",
+    "factory": "0x9C1746bB146E1713DaD64aFC0c8becA5Ee5B9882",
+    "creator": "0x31B7E879Ea9857770B3258A9eAC52bEeD2fc9271",
+    "description": "Five chain-born outlaws. One fully backed bag. hMEME holds equal-value launch units of CASHCAT, ARROW, HOODRAT, WISHBONE, and HOODIE. Fixed basket, in-kind mint/redeem, and the maximum 1% creator fee on both sides to fund memes, bounties, raids, and community growth. Weights float with the winners. Unaffiliated with Robinhood. Memecoins are highly speculative.",
+    "imageURI": "https://hoodl.finance/tokens/hmeme.png",
+    "shareDecimals": 18,
+    "launchNavUsd": "5.00"
+  },
+  "feesBps": {
+    "protocolMint": 30,
+    "protocolRedeem": 10,
+    "creatorMint": 100,
+    "creatorRedeem": 100,
+    "totalMint": 130,
+    "totalRedeem": 110
+  },
+  "marketSnapshot": {
+    "capturedAt": "2026-07-14T20:05:39.601Z",
+    "methodology": "Established Robinhood-native memecoins ranked by current canonical-token market cap; utility tokens, duplicate tickers, spoof pools, and pools below $1,000 liquidity or $100 daily volume were excluded. One primary active pool per token set equal-value launch units.",
+    "source": "DexScreener token-pairs API"
+  },
+  "components": [
+    {
+      "rank": 1,
+      "symbol": "CASHCAT",
+      "name": "Cash Cat",
+      "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "decimals": 18,
+      "rawUnitsPerShare": "6333122229259024699",
+      "displayUnitsPerShare": "6.333122229259024699",
+      "snapshotPriceUsd": "0.1579",
+      "snapshotMarketCapUsd": 156650070,
+      "primaryPool": "0xA70fc67C9F69da90B63a0e4C05D229954574E313",
+      "primaryPoolLiquidityUsd": 9723593.06,
+      "primaryPoolVolume24hUsd": 31656598.55,
+      "primaryPoolUrl": "https://dexscreener.com/robinhood/0xa70fc67c9f69da90b63a0e4c05d229954574e313"
+    },
+    {
+      "rank": 2,
+      "symbol": "ARROW",
+      "name": "Arrow",
+      "token": "0xf2915d1e3C1B0c769d0c756Ec43F1c1f6c99cD03",
+      "decimals": 18,
+      "rawUnitsPerShare": "719424460431654676",
+      "displayUnitsPerShare": "0.719424460431654676",
+      "snapshotPriceUsd": "1.39",
+      "snapshotMarketCapUsd": 13936489,
+      "primaryPool": "0xE40d98D88038e0B844f844dce6Ae3c79ec01ec53",
+      "primaryPoolLiquidityUsd": 291820.53,
+      "primaryPoolVolume24hUsd": 1219127.21,
+      "primaryPoolUrl": "https://dexscreener.com/robinhood/0xe40d98d88038e0b844f844dce6ae3c79ec01ec53"
+    },
+    {
+      "rank": 3,
+      "symbol": "HOODRAT",
+      "name": "Hoodrat",
+      "token": "0x8e62F281f282686fCa6dCB39288069a93fC23F1c",
+      "decimals": 18,
+      "rawUnitsPerShare": "120845921450151057401",
+      "displayUnitsPerShare": "120.845921450151057401",
+      "snapshotPriceUsd": "0.008275",
+      "snapshotMarketCapUsd": 8275482,
+      "primaryPool": "0x451c0DA3b774045a822A129eeDcc5C667DcbfDD8",
+      "primaryPoolLiquidityUsd": 341568.84,
+      "primaryPoolVolume24hUsd": 3069929.17,
+      "primaryPoolUrl": "https://dexscreener.com/robinhood/0x451c0da3b774045a822a129eedcc5c667dcbfdd8"
+    },
+    {
+      "rank": 4,
+      "symbol": "WISHBONE",
+      "name": "WISHBONE",
+      "token": "0x77581054581B9c525E7dd7a0155DE43867532d03",
+      "decimals": 18,
+      "rawUnitsPerShare": "144029958231312112919",
+      "displayUnitsPerShare": "144.029958231312112919",
+      "snapshotPriceUsd": "0.006943",
+      "snapshotMarketCapUsd": 6617371,
+      "primaryPool": "0x6Ec89bFF5E684C2561d0a88e185D8D4eb4b3AA30",
+      "primaryPoolLiquidityUsd": 389648.19,
+      "primaryPoolVolume24hUsd": 3674253.6,
+      "primaryPoolUrl": "https://dexscreener.com/robinhood/0x6ec89bff5e684c2561d0a88e185d8d4eb4b3aa30"
+    },
+    {
+      "rank": 5,
+      "symbol": "HOODIE",
+      "name": "HOODIE",
+      "token": "0xC72c01AAB5f5678dc1d6f5C6d2B417d91D402Ba3",
+      "decimals": 18,
+      "rawUnitsPerShare": "73583517292126563649742",
+      "displayUnitsPerShare": "73583.517292126563649742",
+      "snapshotPriceUsd": "0.00001359",
+      "snapshotMarketCapUsd": 1359069,
+      "primaryPool": "0x590eb1069a71fe72e3470f094c324513da3691987868a2b355fd8f29713d889b",
+      "primaryPoolLiquidityUsd": 425247.09,
+      "primaryPoolVolume24hUsd": 476658.38,
+      "primaryPoolUrl": "https://dexscreener.com/robinhood/0x590eb1069a71fe72e3470f094c324513da3691987868a2b355fd8f29713d889b"
+    }
+  ],
+  "verification": {
+    "contractAddress": null,
+    "creationTransactionHash": null,
+    "blockNumber": null,
+    "createdAt": null,
+    "explorerUrl": null,
+    "imageHttpStatus": null,
+    "tokenURIValidated": false,
+    "componentsValidated": false,
+    "feesValidated": false
+  }
+}

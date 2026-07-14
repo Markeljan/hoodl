@@ -96,16 +96,23 @@ const TOKEN_COLORS: Record<string, string> = {
   NVDA: '#76b900',
   TSLA: '#e82127',
   CASHCAT: '#f5a623',
+  ARROW: '#ccff00',
+  HOODRAT: '#ff3e94',
+  WISHBONE: '#f7e7b6',
+  HOODIE: '#8b5cf6',
   USDG: '#ccff00',
 }
+
+const MEMECOIN_SYMBOLS = new Set(['CASHCAT', 'ARROW', 'HOODRAT', 'WISHBONE', 'HOODIE'])
 
 export function tokenColor(symbol: string): string {
   return TOKEN_COLORS[symbol.toUpperCase()] ?? '#8b9aad'
 }
 
 export function tokenKind(symbol: string): string {
-  if (symbol.toUpperCase() === 'CASHCAT') return 'Memecoin'
-  if (symbol.toUpperCase() === 'USDG') return 'Stablecoin'
+  const normalized = symbol.toUpperCase()
+  if (MEMECOIN_SYMBOLS.has(normalized)) return 'Memecoin'
+  if (normalized === 'USDG') return 'Stablecoin'
   return 'Stock token'
 }
 

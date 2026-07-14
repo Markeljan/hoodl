@@ -49,4 +49,12 @@ describe('site discovery metadata', () => {
     expect(image.type).toBe('image/png')
     expect(await pngDimensions('public/og-image.png')).toEqual({ width: 1200, height: 630 })
   })
+
+  test('ships square hMEME token artwork for hosted metadata', async () => {
+    const image = Bun.file(new URL('public/tokens/hmeme.png', root))
+
+    expect(await image.exists()).toBe(true)
+    expect(image.type).toBe('image/png')
+    expect(await pngDimensions('public/tokens/hmeme.png')).toEqual({ width: 1024, height: 1024 })
+  })
 })

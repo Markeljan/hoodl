@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Hood's Most Wanted hMEME token artwork</title>
+  <desc id="description">A neon wanted poster featuring an original hooded cash cat, rat, arrow, wishbone, and hoodie motif.</desc>
+  <defs>
+    <pattern id="halftone" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2.4" fill="#151515" opacity="0.18" />
+    </pattern>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#d7ff2f" stroke-width="1" opacity="0.12" />
+    </pattern>
+    <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.08" numOctaves="2" seed="4663" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000" flood-opacity="0.62" />
+    </filter>
+    <linearGradient id="poster" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff6d5" />
+      <stop offset="1" stop-color="#e7d7a7" />
+    </linearGradient>
+    <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcff3c" />
+      <stop offset="1" stop-color="#8eb900" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#090a09" />
+  <rect width="1024" height="1024" fill="url(#grid)" />
+  <circle cx="82" cy="164" r="190" fill="#ff3e94" opacity="0.18" />
+  <circle cx="940" cy="862" r="260" fill="#d7ff2f" opacity="0.12" />
+
+  <g transform="rotate(-1.4 512 512)" filter="url(#shadow)">
+    <path d="M96 70H928L954 99V924L923 954H98L70 925V99Z" fill="url(#poster)" stroke="#d7ff2f" stroke-width="13" />
+    <path d="M112 105H908L922 120V904L904 920H118L102 903V121Z" fill="url(#halftone)" stroke="#151515" stroke-width="5" />
+
+    <g fill="#151515" font-family="Arial Black, Impact, sans-serif" text-anchor="middle">
+      <text x="512" y="175" font-size="42" letter-spacing="13">HOOD'S</text>
+      <text x="512" y="268" font-size="100" letter-spacing="-2">MOST WANTED</text>
+    </g>
+    <path d="M139 293H885" stroke="#151515" stroke-width="9" />
+    <path d="M155 309H869" stroke="#ff3e94" stroke-width="6" />
+
+    <!-- crossed arrow -->
+    <g transform="rotate(-31 512 532)" stroke="#151515" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M249 532H785" stroke-width="26" />
+      <path d="M750 497L815 532L750 567Z" fill="#d7ff2f" stroke-width="13" />
+      <path d="M271 490L225 532L271 574M294 490L248 532L294 574" fill="none" stroke="#ff3e94" stroke-width="14" />
+    </g>
+
+    <!-- hoodie silhouette -->
+    <path d="M360 815Q340 695 378 595Q401 535 432 509H592Q624 535 646 595Q684 695 664 815Z" fill="#1b1d1b" stroke="#151515" stroke-width="16" />
+    <path d="M405 602Q399 490 454 431Q512 383 570 431Q625 490 619 602Q571 559 512 561Q453 559 405 602Z" fill="url(#hood)" stroke="#151515" stroke-width="16" />
+    <path d="M420 615Q454 576 512 577Q570 576 604 615L572 729H452Z" fill="#080908" stroke="#d7ff2f" stroke-width="8" />
+
+    <!-- cash cat -->
+    <g filter="url(#rough)">
+      <path d="M437 503L452 417L500 453H524L572 417L587 503Q603 538 586 606Q573 673 512 691Q451 673 438 606Q421 538 437 503Z" fill="#f3c36a" stroke="#151515" stroke-width="15" />
+      <path d="M450 444L472 473L446 493ZM574 444L552 473L578 493Z" fill="#ff9d45" />
+      <path d="M461 535Q482 514 501 535Q482 573 461 535Z" fill="#d7ff2f" stroke="#151515" stroke-width="7" />
+      <path d="M523 535Q542 514 563 535Q542 573 523 535Z" fill="#d7ff2f" stroke="#151515" stroke-width="7" />
+      <text x="481" y="552" fill="#151515" font-family="Arial Black, sans-serif" font-size="34" text-anchor="middle">$</text>
+      <text x="543" y="552" fill="#151515" font-family="Arial Black, sans-serif" font-size="34" text-anchor="middle">$</text>
+      <path d="M494 589L512 600L530 589L512 618Z" fill="#ff3e94" stroke="#151515" stroke-width="6" />
+      <path d="M470 632Q512 651 554 632" fill="none" stroke="#151515" stroke-width="8" stroke-linecap="round" />
+      <path d="M470 586L400 568M470 606L394 609M554 586L624 568M554 606L630 609" stroke="#151515" stroke-width="7" stroke-linecap="round" />
+    </g>
+
+    <!-- hood rat sidekick -->
+    <g transform="translate(238 586) rotate(-8)">
+      <path d="M144 134Q82 136 63 93Q48 57 84 35Q115 16 153 39Q186 58 187 93Q187 121 169 133Z" fill="#8c9189" stroke="#151515" stroke-width="11" />
+      <circle cx="84" cy="46" r="28" fill="#ff8abb" stroke="#151515" stroke-width="9" />
+      <circle cx="158" cy="49" r="26" fill="#ff8abb" stroke="#151515" stroke-width="9" />
+      <circle cx="104" cy="83" r="7" fill="#151515" />
+      <circle cx="145" cy="83" r="7" fill="#151515" />
+      <path d="M117 103L128 112L139 103" fill="#ff3e94" stroke="#151515" stroke-width="5" />
+      <path d="M63 113Q17 123 22 168Q28 205 69 193" fill="none" stroke="#ff3e94" stroke-width="11" stroke-linecap="round" />
+    </g>
+
+    <!-- wishbone badge -->
+    <g transform="translate(704 579) rotate(8)">
+      <circle cx="74" cy="78" r="87" fill="#ff3e94" stroke="#151515" stroke-width="11" />
+      <path d="M45 31Q39 83 73 112M103 31Q109 83 75 112M74 112V145" fill="none" stroke="#fff6d5" stroke-width="22" stroke-linecap="round" />
+      <path d="M45 31L25 16M103 31L123 16" stroke="#fff6d5" stroke-width="18" stroke-linecap="round" />
+    </g>
+
+    <g font-family="Arial Black, Impact, sans-serif" text-anchor="middle">
+      <rect x="132" y="337" width="214" height="56" rx="8" fill="#151515" />
+      <text x="239" y="377" fill="#fff6d5" font-size="29">HOODRAT</text>
+      <rect x="678" y="337" width="214" height="56" rx="8" fill="#151515" />
+      <text x="785" y="377" fill="#fff6d5" font-size="29">WISHBONE</text>
+      <rect x="143" y="735" width="198" height="54" rx="8" fill="#d7ff2f" stroke="#151515" stroke-width="5" />
+      <text x="242" y="772" fill="#151515" font-size="29">ARROW</text>
+      <rect x="683" y="735" width="198" height="54" rx="8" fill="#d7ff2f" stroke="#151515" stroke-width="5" />
+      <text x="782" y="772" fill="#151515" font-size="29">HOODIE</text>
+      <rect x="368" y="710" width="288" height="60" rx="9" fill="#ff3e94" stroke="#151515" stroke-width="6" />
+      <text x="512" y="751" fill="#fff6d5" font-size="31">CASHCAT</text>
+    </g>
+
+    <path d="M130 838H894" stroke="#151515" stroke-width="8" />
+    <g font-family="Arial Black, Impact, sans-serif" text-anchor="middle">
+      <text x="512" y="898" fill="#151515" font-size="68" letter-spacing="8">hMEME</text>
+      <text x="512" y="932" fill="#151515" font-size="20" letter-spacing="8">5 OUTLAWS · 1 BAG</text>
+    </g>
+  </g>
+
+  <g fill="#d7ff2f" font-family="Arial Black, sans-serif" font-size="18" letter-spacing="4">
+    <text x="20" y="1000">HOODL · 4663</text>
+    <text x="1004" y="1000" text-anchor="end">NOT AFFILIATED</text>
+  </g>
+</svg>
