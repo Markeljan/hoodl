@@ -10,6 +10,10 @@ import Landing from './components/Landing'
 import Discover from './components/Discover'
 import Detail from './components/Detail'
 import Portfolio from './components/Portfolio'
+import CreateIndex from './components/CreateIndex'
+import Creator from './components/Creator'
+import Activity from './components/Activity'
+import Operator from './components/Operator'
 import Footer from './components/Footer'
 import Toast from './components/Toast'
 
@@ -28,8 +32,12 @@ export default function App() {
   const [usdgIn, setUsdgIn] = useState('35')
   const [mintShares, setMintShares] = useState('1')
   const [redeemShares, setRedeemShares] = useState('1')
-  const [transferTo, setTransferTo] = useState('')
-  const [transferAmount, setTransferAmount] = useState('')
+  const [mintRecipient, setMintRecipient] = useState('')
+  const [redeemRecipient, setRedeemRecipient] = useState('')
+  const [sellShares, setSellShares] = useState('1')
+  const [sellSlippage, setSellSlippage] = useState('1')
+  const [sellQuote, setSellQuote] = useState<{ indexId: string; shares: bigint; amount: bigint } | null>(null)
+  const [sellQuoting, setSellQuoting] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -52,10 +60,11 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToastMsg(null), 4200)
   }
 
-  const runAction = async (action: () => Promise<`0x${string}`>, success: string) => {
+  const runAction = async (action: () => Promise<`0x${string}`>, success: string, after?: () => void) => {
     try {
       const hash = await action()
       toast(`${success} · ${shortAddress(hash, 10, 6)}`)
+      after?.()
     } catch (error) {
       toast(messageOf(error))
     }
@@ -75,6 +84,10 @@ export default function App() {
     setTab(nextTab)
     go('detail')
   }
+
+  useEffect(() => {
+    setSellQuote(null)
+  }, [selId, sellShares])
 
   const maxUsdgRaw = parseAmountOrZero(usdgIn, 6)
   const buyGrossShares = sel?.navRaw ? (maxUsdgRaw * SHARE_UNIT * 10_000n) / (sel.navRaw * 10_300n) : 0n
@@ -107,16 +120,9 @@ export default function App() {
       valueLabel: usdRawLabel(row.valueRaw == null ? null : mulDivFloor(row.valueRaw, redeemNetShares, SHARE_UNIT)),
     })) ?? []
 
-  const haiBalance = hai ? (hoodl.balances[hai.id] ?? 0n) : 0n
-  const holdingValueRaw = hai?.navRaw ? mulDivFloor(haiBalance, hai.navRaw, SHARE_UNIT) : null
-  const lookthrough =
-    hai?.rows.map((row) => ({
-      sym: row.sym,
-      name: row.name,
-      color: row.color,
-      amountLabel: amountLabel(mulDivFloor(row.unitsRaw, haiBalance, SHARE_UNIT), row.decimals),
-      valueLabel: usdRawLabel(row.valueRaw == null ? null : mulDivFloor(row.valueRaw, haiBalance, SHARE_UNIT)),
-    })) ?? []
+  const sellSlippageBps = Math.max(0, Math.min(10_000, Math.round((Number(sellSlippage) || 0) * 100)))
+  const sellQuoteRaw = sel && sellQuote?.indexId === sel.id ? sellQuote.amount : null
+  const sellMinRaw = sellQuoteRaw == null ? null : (sellQuoteRaw * BigInt(10_000 - sellSlippageBps)) / 10_000n
 
   const tickerItems = useMemo(() => {
     const seen = new Set<string>()
@@ -153,6 +159,12 @@ export default function App() {
   const connectLabel = hoodl.wrongNetwork ? 'Switch network' : hoodl.account ? shortAddress(hoodl.account) : 'Connect wallet'
   const walletAmountLabel = (raw: bigint, decimals: number) =>
     hoodl.account && !hoodl.walletDataReady ? (hoodl.walletError ? 'Unavailable' : 'Loading…') : amountLabel(raw, decimals)
+  const creatorIndexes = hoodl.indexes.filter((index) => hoodl.account && index.creator.toLowerCase() === hoodl.account.toLowerCase())
+  const isOperator = Boolean(
+    hoodl.account &&
+      hoodl.protocolState &&
+      [hoodl.protocolState.factoryOwner, hoodl.protocolState.lensOwner, hoodl.protocolState.zapOwner].some((owner) => owner.toLowerCase() === hoodl.account?.toLowerCase()),
+  )
 
   return (
     <div data-theme={theme} style={{ minHeight: '100vh', background: 'var(--canvas)', color: 'var(--text)', fontFamily: 'Manrope,system-ui,sans-serif' }}>
@@ -163,7 +175,13 @@ export default function App() {
         networkState={hoodl.wrongNetwork ? 'wrong' : hoodl.account ? 'ready' : 'disconnected'}
         onLogo={() => go('landing')}
         onDiscover={() => go('discover')}
+        onCreate={() => go('create')}
         onPortfolio={() => go('portfolio')}
+        onCreator={() => go('creator')}
+        onActivity={() => go('activity')}
+        onOperator={() => go('operator')}
+        showCreator={creatorIndexes.length > 0}
+        showOperator={isOperator}
         onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onConnect={() => void handleWallet()}
       />
@@ -186,6 +204,13 @@ export default function App() {
           openDetail={openDetail}
         />
       )}
+      {screen === 'create' && (
+        <CreateIndex
+          protocol={hoodl.protocolState}
+          pendingAction={hoodl.pendingAction}
+          onCreate={(input) => void runAction(() => hoodl.createIndex(input), `Created ${input.symbol}`, () => go('discover'))}
+        />
+      )}
       {screen === 'detail' && sel && (
         <Detail
           sel={sel}
@@ -194,6 +219,7 @@ export default function App() {
           setTab={setTab}
           blockNumber={hoodl.blockNumber}
           explorerUrl={`${explorerUrl}/address/${sel.address}`}
+          treasuryLabel={hoodl.protocolState ? shortAddress(hoodl.protocolState.treasury, 8, 6) : 'Loading…'}
           walletReady={hoodl.account != null && !hoodl.wrongNetwork}
           pendingAction={hoodl.pendingAction}
           lastTxUrl={lastTxUrl}
@@ -216,10 +242,13 @@ export default function App() {
           onMintShares={setMintShares}
           mintBasket={mintBasket}
           mintNetLabel={amountLabel(mintNetShares, 18)}
+          mintRecipient={mintRecipient}
+          onMintRecipient={setMintRecipient}
           onMint={() => {
             try {
               const raw = parseAmount(mintShares, 18)
-              void runAction(() => hoodl.mintInKind(sel, raw), `Minted ${sel.symbol}`)
+              const recipient = mintRecipient.trim() ? getAddress(mintRecipient.trim()) : undefined
+              void runAction(() => hoodl.mintInKind(sel, raw, recipient), `Minted ${sel.symbol}`)
             } catch (error) {
               toast(messageOf(error))
             }
@@ -229,10 +258,45 @@ export default function App() {
           redeemBasket={redeemBasket}
           indexBalanceLabel={walletAmountLabel(hoodl.balances[sel.id] ?? 0n, 18)}
           redeemFeeLabel={`${sel.fRedeemLabel} · ${amountLabel(redeemGrossShares - redeemNetShares, 18)} ${sel.symbol}`}
+          redeemRecipient={redeemRecipient}
+          onRedeemRecipient={setRedeemRecipient}
           onRedeem={() => {
             try {
               const raw = parseAmount(redeemShares, 18)
-              void runAction(() => hoodl.redeemInKind(sel, raw), `Redeemed ${sel.symbol}`)
+              const recipient = redeemRecipient.trim() ? getAddress(redeemRecipient.trim()) : undefined
+              void runAction(() => hoodl.redeemInKind(sel, raw, recipient), `Redeemed ${sel.symbol}`)
+            } catch (error) {
+              toast(messageOf(error))
+            }
+          }}
+          sellShares={sellShares}
+          onSellShares={setSellShares}
+          sellQuoteLabel={sellQuoteRaw == null ? '—' : amountLabel(sellQuoteRaw, 6)}
+          sellMinLabel={sellMinRaw == null ? '—' : amountLabel(sellMinRaw, 6)}
+          sellSlippage={sellSlippage}
+          onSellSlippage={setSellSlippage}
+          sellQuoting={sellQuoting}
+          onSellQuote={() => {
+            try {
+              const shares = parseAmount(sellShares, 18)
+              setSellQuoting(true)
+              void hoodl
+                .quoteZapRedeem(sel, shares)
+                .then((amount) => {
+                  setSellQuote({ indexId: sel.id, shares, amount })
+                  toast('Executable V4 quote refreshed.')
+                })
+                .catch((error) => toast(messageOf(error)))
+                .finally(() => setSellQuoting(false))
+            } catch (error) {
+              toast(messageOf(error))
+            }
+          }}
+          onSell={() => {
+            try {
+              const shares = parseAmount(sellShares, 18)
+              if (!sellQuote || sellQuote.indexId !== sel.id || sellQuote.shares !== shares || sellMinRaw == null) throw new Error('Refresh the executable quote before selling.')
+              void runAction(() => hoodl.redeemToUsdg(sel, shares, sellMinRaw), `Sold ${sel.symbol}`)
             } catch (error) {
               toast(messageOf(error))
             }
@@ -244,30 +308,43 @@ export default function App() {
           connected={hoodl.account != null}
           accountLabel={hoodl.account ? shortAddress(hoodl.account) : 'Not connected'}
           onConnect={() => void handleWallet()}
-          hai={hai}
+          indexes={hoodl.indexes}
+          balances={hoodl.balances}
           usdgBalanceLabel={walletAmountLabel(hoodl.usdgBalance, 6)}
           walletError={hoodl.walletError}
-          hBalLabel={walletAmountLabel(haiBalance, 18)}
-          totalLabel={hoodl.account && !hoodl.walletDataReady ? (hoodl.walletError ? 'Unavailable' : 'Loading…') : usdRawLabel(holdingValueRaw)}
-          lookthrough={lookthrough}
-          buyMore={() => hai && openTrade(hai.id, 'buy')}
-          redeemHold={() => hai && openTrade(hai.id, 'redeem')}
-          transferTo={transferTo}
-          onTransferTo={setTransferTo}
-          transferAmount={transferAmount}
-          onTransferAmount={setTransferAmount}
+          walletDataReady={hoodl.walletDataReady}
+          onTrade={(index, nextTab) => openTrade(index.id, nextTab)}
           pendingAction={hoodl.pendingAction}
           lastTxUrl={lastTxUrl}
-          onTransfer={() => {
-            if (!hai) return
-            try {
-              const recipient = getAddress(transferTo.trim())
-              const amount = parseAmount(transferAmount, 18)
-              void runAction(() => hoodl.transferIndex(hai, recipient, amount), `Transferred ${hai.symbol}`)
-            } catch (error) {
-              toast(messageOf(error))
-            }
-          }}
+          onTransfer={(index, recipient, amount) => void runAction(() => hoodl.transferIndex(index, recipient, amount), `Transferred ${index.symbol}`)}
+        />
+      )}
+      {screen === 'creator' && (
+        <Creator
+          account={hoodl.account}
+          indexes={hoodl.indexes}
+          balances={hoodl.balances}
+          activity={hoodl.activity}
+          pendingAction={hoodl.pendingAction}
+          onConnect={() => void handleWallet()}
+          onMetadata={(index, description, imageURI) => void runAction(() => hoodl.updateMetadata(index, description, imageURI), `Updated ${index.symbol}`)}
+          onCreator={(index, creator) => void runAction(() => hoodl.updateCreator(index, creator), `Transferred ${index.symbol} creator role`, () => go('discover'))}
+        />
+      )}
+      {screen === 'activity' && <Activity activity={hoodl.activity} error={hoodl.activityError} />}
+      {screen === 'operator' && (
+        <Operator
+          account={hoodl.account}
+          protocol={hoodl.protocolState}
+          pendingAction={hoodl.pendingAction}
+          onConnect={() => void handleWallet()}
+          onFees={(mintBps, redeemBps) => void runAction(() => hoodl.setProtocolFees(mintBps, redeemBps), 'Updated future protocol fees')}
+          onTreasury={(treasury) => void runAction(() => hoodl.setTreasury(treasury), 'Updated protocol treasury')}
+          onLens={(token, config) => void runAction(() => hoodl.setLensConfig(token, config), 'Updated Lens source')}
+          onSequencer={(feed, grace) => void runAction(() => hoodl.setSequencer(feed, grace), 'Updated sequencer guard')}
+          onZap={(token, pool) => void runAction(() => hoodl.setZapPool(token, pool), 'Updated Zap route')}
+          onTransferOwnership={(contract, owner) => void runAction(() => hoodl.transferContractOwnership(contract, owner), `Transferred ${contract} ownership`, () => go('landing'))}
+          onRenounce={(contract) => void runAction(() => hoodl.renounceContractOwnership(contract), `Renounced ${contract} ownership`, () => go('landing'))}
         />
       )}
 

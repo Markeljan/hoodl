@@ -56,7 +56,7 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span
+                {ix.imageURI ? <img src={ix.imageURI} alt="" style={{ width: 44, height: 34, objectFit: 'cover', borderRadius: 8, background: 'var(--surface-3)' }} /> : <span
                   style={{
                     display: 'grid',
                     placeItems: 'center',
@@ -70,7 +70,7 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
                   }}
                 >
                   {ix.symbol}
-                </span>
+                </span>}
                 <span style={{ fontSize: 12, color: 'var(--text-3)', border: '1px solid var(--border)', borderRadius: 99, padding: '3px 9px' }}>
                   {ix.kindSummary}
                 </span>
@@ -92,6 +92,7 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
             </div>
             <div style={{ font: "600 17px 'Space Grotesk',sans-serif", color: 'var(--text)' }}>{ix.name}</div>
             <p style={{ margin: '7px 0 16px', fontSize: 13, lineHeight: 1.5, color: 'var(--text-2)', minHeight: 39 }}>{ix.tagline}</p>
+            <div style={{ margin: '-7px 0 14px', font: "500 10.5px 'JetBrains Mono',monospace", color: ix.canZapMint ? 'var(--neon)' : 'var(--text-3)' }}>{ix.capabilitySummary}</div>
             <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 2, marginBottom: 16 }}>
               {ix.segments.map((sg, i) => (
                 <span key={i} style={{ height: '100%', borderRadius: 2, width: sg.width, background: sg.color }} />

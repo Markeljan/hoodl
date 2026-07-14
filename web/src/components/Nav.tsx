@@ -8,15 +8,25 @@ interface NavProps {
   networkState: 'disconnected' | 'ready' | 'wrong'
   onLogo: () => void
   onDiscover: () => void
+  onCreate: () => void
   onPortfolio: () => void
+  onCreator: () => void
+  onActivity: () => void
+  onOperator: () => void
+  showCreator: boolean
+  showOperator: boolean
   onToggleTheme: () => void
   onConnect: () => void
 }
 
-export default function Nav({ screen, themeLabel, connectLabel, networkState, onLogo, onDiscover, onPortfolio, onToggleTheme, onConnect }: NavProps) {
+export default function Nav({ screen, themeLabel, connectLabel, networkState, onLogo, onDiscover, onCreate, onPortfolio, onCreator, onActivity, onOperator, showCreator, showOperator, onToggleTheme, onConnect }: NavProps) {
   const items = [
     { key: 'discover', label: 'Discover', active: screen === 'discover' || screen === 'detail', onClick: onDiscover },
+    { key: 'create', label: 'Create', active: screen === 'create', onClick: onCreate },
     { key: 'portfolio', label: 'Portfolio', active: screen === 'portfolio', onClick: onPortfolio },
+    ...(showCreator ? [{ key: 'creator', label: 'Manage', active: screen === 'creator', onClick: onCreator }] : []),
+    { key: 'activity', label: 'Activity', active: screen === 'activity', onClick: onActivity },
+    ...(showOperator ? [{ key: 'operator', label: 'Operator', active: screen === 'operator', onClick: onOperator }] : []),
   ]
   return (
     <header
