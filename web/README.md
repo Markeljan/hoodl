@@ -36,9 +36,21 @@ the network when the wallet reports that it is unknown.
 Every write is simulated before it is sent, then tracked until its Robinhood Chain receipt is
 confirmed. Transaction links point to Blockscout.
 
+## Discovery and analytics
+
+The production HTML publishes canonical, Open Graph, Twitter Card, and JSON-LD metadata for
+`https://hoodl.finance/`. Supporting files in `public/` provide the social preview, app icons,
+web manifest, robots policy, and sitemap.
+
+Vercel Web Analytics and Speed Insights are mounted at the application root. Custom events cover
+screen navigation, wallet lifecycle, and protocol-action outcomes without including wallet
+addresses, transaction hashes, entered amounts, or error messages. The corresponding features
+must be enabled for the project in Vercel for production data to appear in its dashboards.
+
 ## Checks
 
 ```shell
+bun run test
 bun run lint
 bun run build
 ```
