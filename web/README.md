@@ -16,6 +16,13 @@ The app uses the public Robinhood Chain RPC for read-only state. To transact, op
 with an injected EVM wallet. Connecting requests Robinhood Chain mainnet (chain ID `4663`) and adds
 the network when the wallet reports that it is unknown.
 
+## Shareable URLs
+
+Navigation state lives in the URL so pages can be opened directly, bookmarked, and shared. Index
+detail URLs use the immutable contract address (`/indexes/:address`), and the active action is kept
+in the query string when it is not the default buy flow (for example, `?action=redeem`). The app
+also supports browser back/forward navigation and direct Vercel deep links for every top-level page.
+
 ## Implemented contract flows
 
 - Discover indexes from `IndexFactory.indexesCount` and `allIndexes`.

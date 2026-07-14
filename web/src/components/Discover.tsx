@@ -1,4 +1,6 @@
 import type { IndexView } from '../model'
+import { hrefForIndex } from '../routes'
+import AppLink from './AppLink'
 
 interface DiscoverProps {
   indexes: IndexView[]
@@ -39,11 +41,13 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
       )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(280px,100%),1fr))', gap: 18 }}>
         {indexes.map((ix) => (
-          <button
+          <AppLink
             key={ix.id}
-            onClick={() => openDetail(ix.id)}
+            href={hrefForIndex(ix.id)}
+            onNavigate={() => openDetail(ix.id)}
             className="hv-card"
             style={{
+              display: 'block',
               textAlign: 'left',
               background: 'var(--surface)',
               border: '1px solid var(--border)',
@@ -52,6 +56,7 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
               cursor: 'pointer',
               transition: 'transform .12s ease,border-color .12s ease',
               fontFamily: 'Manrope,sans-serif',
+              textDecoration: 'none',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
@@ -108,7 +113,7 @@ export default function Discover({ indexes, loading, error, retry, openDetail }:
                 <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>total supply</div>
               </div>
             </div>
-          </button>
+          </AppLink>
         ))}
       </div>
     </main>

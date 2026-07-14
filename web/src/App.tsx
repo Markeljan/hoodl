@@ -3,8 +3,11 @@ import { track } from '@vercel/analytics/react'
 import { getAddress } from 'viem'
 import { addresses, explorerUrl } from './contracts'
 import { amountLabel, mulDivCeil, mulDivFloor, netShares, parseAmount, parseAmountOrZero, shortAddress, usdRawLabel } from './model'
-import type { Screen, Tab } from './model'
+import type { Tab } from './model'
+import { hrefForIndex, routeForScreen } from './routes'
+import type { StaticScreen } from './routes'
 import { useHoodl } from './useHoodl'
+import { useUrlRoute } from './useUrlRoute'
 import Nav from './components/Nav'
 import Ticker from './components/Ticker'
 import Landing from './components/Landing'
@@ -24,12 +27,50 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : 'The request failed.'
 }
 
+function copyTextFromUserGesture(value: string): boolean {
+  const activeElement = document.activeElement
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  textarea.setSelectionRange(0, value.length)
+
+  try {
+    return document.execCommand('copy')
+  } catch {
+    return false
+  } finally {
+    textarea.remove()
+    if (activeElement instanceof HTMLElement) activeElement.focus()
+  }
+}
+
+function titleForScreen(screen: StaticScreen): string {
+  switch (screen) {
+    case 'landing':
+      return 'HOODL · Permissionless index tokens'
+    case 'discover':
+      return 'Discover indexes | HOODL'
+    case 'create':
+      return 'Create an index | HOODL'
+    case 'portfolio':
+      return 'Portfolio | HOODL'
+    case 'creator':
+      return 'Manage indexes | HOODL'
+    case 'activity':
+      return 'Protocol activity | HOODL'
+    case 'operator':
+      return 'Operator console | HOODL'
+  }
+}
+
 export default function App() {
   const hoodl = useHoodl()
+  const { route, navigate } = useUrlRoute()
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const [screen, setScreen] = useState<Screen>('landing')
-  const [selId, setSelId] = useState(addresses.hai.toLowerCase())
-  const [tab, setTab] = useState<Tab>('buy')
   const [usdgIn, setUsdgIn] = useState('35')
   const [mintShares, setMintShares] = useState('1')
   const [redeemShares, setRedeemShares] = useState('1')
@@ -41,24 +82,50 @@ export default function App() {
   const [sellQuoting, setSellQuoting] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const screen = route.screen
+  const selId = route.screen === 'detail' ? route.indexId : null
+  const tab = route.screen === 'detail' ? route.tab : 'buy'
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
-  useEffect(() => {
-    if (hoodl.indexes.length > 0 && !hoodl.indexes.some((index) => index.id === selId)) {
-      setSelId(hoodl.indexes[0].id)
-    }
-  }, [hoodl.indexes, selId])
-
-  const sel = hoodl.indexes.find((index) => index.id === selId) ?? hoodl.indexes[0] ?? null
+  const sel = selId == null ? null : (hoodl.indexes.find((index) => index.id === selId) ?? null)
   const hai = hoodl.indexes.find((index) => index.address.toLowerCase() === addresses.hai.toLowerCase()) ?? null
+
+  useEffect(() => {
+    track('Screen Viewed', { screen })
+  }, [screen])
+
+  useEffect(() => {
+    document.title = screen === 'detail' ? (sel ? `${sel.symbol} · ${sel.name} | HOODL` : 'Index | HOODL') : titleForScreen(screen)
+  }, [screen, sel])
 
   const toast = (msg: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current)
     setToastMsg(msg)
     toastTimer.current = setTimeout(() => setToastMsg(null), 4200)
+  }
+
+  const copyShareLink = () => {
+    if (!sel) return
+    const url = new URL(hrefForIndex(sel.id, tab), window.location.origin).toString()
+    const copied = () => {
+      track('Index Link Copied', { action: tab })
+      toast('Index link copied.')
+    }
+
+    if (copyTextFromUserGesture(url)) {
+      copied()
+      return
+    }
+
+    if (!navigator.clipboard) {
+      toast('Copy the URL from your address bar to share this index.')
+      return
+    }
+
+    void navigator.clipboard.writeText(url).then(copied).catch(() => toast('Copy the URL from your address bar to share this index.'))
   }
 
   const runAction = async (action: () => Promise<`0x${string}`>, success: string, after?: () => void) => {
@@ -73,20 +140,17 @@ export default function App() {
     }
   }
 
-  const go = (nextScreen: Screen) => {
-    setScreen(nextScreen)
-    track('Screen Viewed', { screen: nextScreen })
+  const go = (nextScreen: StaticScreen) => {
+    navigate(routeForScreen(nextScreen))
     window.scrollTo(0, 0)
   }
   const openDetail = (id: string) => {
-    setSelId(id)
-    setTab('buy')
-    go('detail')
+    navigate({ screen: 'detail', indexId: id, tab: 'buy' })
+    window.scrollTo(0, 0)
   }
   const openTrade = (id: string, nextTab: Tab) => {
-    setSelId(id)
-    setTab(nextTab)
-    go('detail')
+    navigate({ screen: 'detail', indexId: id, tab: nextTab })
+    window.scrollTo(0, 0)
   }
 
   useEffect(() => {
@@ -211,6 +275,21 @@ export default function App() {
           openDetail={openDetail}
         />
       )}
+      {screen === 'detail' && !sel && (
+        <main className="page">
+          <div style={{ maxWidth: 620, padding: 28, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18 }}>
+            <h1 style={{ margin: 0, font: "700 30px 'Space Grotesk',sans-serif" }}>
+              {hoodl.loading ? 'Opening index…' : hoodl.loadError ? 'Could not load this index' : 'Index not found'}
+            </h1>
+            <p style={{ margin: '10px 0 20px', color: 'var(--text-2)', lineHeight: 1.55 }}>
+              {hoodl.loading
+                ? 'Reading the factory registry and matching the contract address from this URL.'
+                : hoodl.loadError ?? 'No registered index matches the contract address in this URL.'}
+            </p>
+            <button type="button" onClick={() => go('discover')} className="primary-button">Browse indexes</button>
+          </div>
+        </main>
+      )}
       {screen === 'create' && (
         <CreateIndex
           protocol={hoodl.protocolState}
@@ -223,7 +302,7 @@ export default function App() {
           sel={sel}
           goDiscover={() => go('discover')}
           tab={tab}
-          setTab={setTab}
+          setTab={(nextTab) => navigate({ screen: 'detail', indexId: sel.id, tab: nextTab })}
           blockNumber={hoodl.blockNumber}
           explorerUrl={`${explorerUrl}/address/${sel.address}`}
           treasuryLabel={hoodl.protocolState ? shortAddress(hoodl.protocolState.treasury, 8, 6) : 'Loading…'}
@@ -308,6 +387,7 @@ export default function App() {
               toast(messageOf(error))
             }
           }}
+          onShare={copyShareLink}
         />
       )}
       {screen === 'portfolio' && (

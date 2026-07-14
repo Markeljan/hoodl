@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
 import { shortAddress } from '../model'
 import type { IndexView, Tab } from '../model'
+import { hrefForIndex, hrefForScreen } from '../routes'
+import AppLink from './AppLink'
 
 export interface BasketLine {
   sym: string
@@ -52,6 +54,7 @@ interface DetailProps {
   sellQuoting: boolean
   onSellQuote: () => void
   onSell: () => void
+  onShare: () => void
 }
 
 const inputRowStyle: CSSProperties = {
@@ -136,8 +139,9 @@ export default function Detail(p: DetailProps) {
   const tabs: Tab[] = ['buy', 'mint', 'redeem', 'sell']
   return (
     <main className="page page--detail">
-      <button
-        onClick={p.goDiscover}
+      <AppLink
+        href={hrefForScreen('discover')}
+        onNavigate={p.goDiscover}
         className="hv-text"
         style={{
           display: 'inline-flex',
@@ -151,10 +155,11 @@ export default function Detail(p: DetailProps) {
           fontSize: 13.5,
           padding: '6px 0',
           marginBottom: 18,
+          textDecoration: 'none',
         }}
       >
         ← Discover
-      </button>
+      </AppLink>
 
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
@@ -186,7 +191,11 @@ export default function Detail(p: DetailProps) {
               </span>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>{sel.tokenURI && <a href={sel.tokenURI} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 11, fontSize: 12 }}>Open tokenURI ↗</a>}{sel.contractURI && <a href={sel.contractURI} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 11, fontSize: 12 }}>Open contractURI ↗</a>}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 11 }}>
+            <button type="button" onClick={p.onShare} className="hv-chip" style={{ padding: '6px 10px', border: '1px solid var(--border-strong)', borderRadius: 8, background: 'var(--surface)', color: 'var(--text-2)', cursor: 'pointer', font: "600 12px 'Space Grotesk',sans-serif" }}>Copy share link</button>
+            {sel.tokenURI && <a href={sel.tokenURI} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>Open tokenURI ↗</a>}
+            {sel.contractURI && <a href={sel.contractURI} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>Open contractURI ↗</a>}
+          </div>
         </div>
         <div className="detail-price">
           <div style={{ font: "700 40px 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>{sel.navLabel}</div>
@@ -321,10 +330,12 @@ export default function Detail(p: DetailProps) {
         >
           <div style={{ display: 'flex', gap: 3, padding: 4, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 18 }}>
             {tabs.map((t) => (
-              <button
+              <AppLink
                 key={t}
-                onClick={() => p.setTab(t)}
+                href={hrefForIndex(sel.id, t)}
+                onNavigate={() => p.setTab(t)}
                 style={{
+                  display: 'block',
                   flex: 1,
                   padding: 10,
                   border: 'none',
@@ -333,10 +344,12 @@ export default function Detail(p: DetailProps) {
                   font: "600 14px 'Space Grotesk',sans-serif",
                   background: tab === t ? 'var(--neon-dim)' : 'transparent',
                   color: tab === t ? 'var(--text)' : 'var(--text-3)',
+                  textAlign: 'center',
+                  textDecoration: 'none',
                 }}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
+              </AppLink>
             ))}
           </div>
           {p.pendingAction && (

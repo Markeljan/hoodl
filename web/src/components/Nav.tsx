@@ -1,4 +1,6 @@
 import type { Screen } from '../model'
+import { hrefForScreen } from '../routes'
+import AppLink from './AppLink'
 import HoodlMark from './HoodlMark'
 
 interface NavProps {
@@ -21,12 +23,12 @@ interface NavProps {
 
 export default function Nav({ screen, themeLabel, connectLabel, networkState, onLogo, onDiscover, onCreate, onPortfolio, onCreator, onActivity, onOperator, showCreator, showOperator, onToggleTheme, onConnect }: NavProps) {
   const items = [
-    { key: 'discover', label: 'Discover', active: screen === 'discover' || screen === 'detail', onClick: onDiscover },
-    { key: 'create', label: 'Create', active: screen === 'create', onClick: onCreate },
-    { key: 'portfolio', label: 'Portfolio', active: screen === 'portfolio', onClick: onPortfolio },
-    ...(showCreator ? [{ key: 'creator', label: 'Manage', active: screen === 'creator', onClick: onCreator }] : []),
-    { key: 'activity', label: 'Activity', active: screen === 'activity', onClick: onActivity },
-    ...(showOperator ? [{ key: 'operator', label: 'Operator', active: screen === 'operator', onClick: onOperator }] : []),
+    { key: 'discover', label: 'Discover', href: hrefForScreen('discover'), active: screen === 'discover' || screen === 'detail', onNavigate: onDiscover },
+    { key: 'create', label: 'Create', href: hrefForScreen('create'), active: screen === 'create', onNavigate: onCreate },
+    { key: 'portfolio', label: 'Portfolio', href: hrefForScreen('portfolio'), active: screen === 'portfolio', onNavigate: onPortfolio },
+    ...(showCreator ? [{ key: 'creator', label: 'Manage', href: hrefForScreen('creator'), active: screen === 'creator', onNavigate: onCreator }] : []),
+    { key: 'activity', label: 'Activity', href: hrefForScreen('activity'), active: screen === 'activity', onNavigate: onActivity },
+    ...(showOperator ? [{ key: 'operator', label: 'Operator', href: hrefForScreen('operator'), active: screen === 'operator', onNavigate: onOperator }] : []),
   ]
   return (
     <header
@@ -41,17 +43,19 @@ export default function Nav({ screen, themeLabel, connectLabel, networkState, on
         borderBottom: '1px solid var(--border)',
       }}
     >
-      <button onClick={onLogo} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+      <AppLink href={hrefForScreen('landing')} onNavigate={onLogo} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'none' }}>
         <HoodlMark size={34} radius={9} style={{ boxShadow: '0 6px 18px -8px var(--neon)', borderRadius: 9 }} />
         <span style={{ font: "700 20px/1 'Space Grotesk',sans-serif", letterSpacing: '-.02em', color: 'var(--text)' }}>HOODL</span>
-      </button>
+      </AppLink>
       <nav className="nav-links">
         {items.map((item) => (
-          <button
+          <AppLink
             key={item.key}
-            onClick={item.onClick}
+            href={item.href}
+            onNavigate={item.onNavigate}
             className="hv-text"
             style={{
+              display: 'inline-block',
               background: 'none',
               border: 'none',
               padding: '8px 12px',
@@ -61,10 +65,11 @@ export default function Nav({ screen, themeLabel, connectLabel, networkState, on
               fontSize: 14.5,
               color: item.active ? 'var(--text)' : 'var(--text-3)',
               fontWeight: item.active ? 600 : 500,
+              textDecoration: 'none',
             }}
           >
             {item.label}
-          </button>
+          </AppLink>
         ))}
       </nav>
       <div className="nav-actions">

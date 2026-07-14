@@ -38,6 +38,9 @@ describe('site discovery metadata', () => {
 
     expect(robots).toContain('Sitemap: https://hoodl.finance/sitemap.xml')
     expect(sitemap).toContain('<loc>https://hoodl.finance/</loc>')
+    expect(sitemap).toContain('<loc>https://hoodl.finance/indexes</loc>')
+    expect(sitemap).toContain('<loc>https://hoodl.finance/create</loc>')
+    expect(sitemap).toContain('<loc>https://hoodl.finance/activity</loc>')
     expect(() => JSON.parse(manifest)).not.toThrow()
     expect(manifest).toContain('"theme_color": "#ccff00"')
   })
