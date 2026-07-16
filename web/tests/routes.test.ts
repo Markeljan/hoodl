@@ -17,6 +17,7 @@ describe('URL-backed app routes', () => {
     expect(hrefForScreen('portfolio')).toBe('/portfolio')
     expect(hrefForScreen('creator')).toBe('/manage')
     expect(hrefForScreen('activity')).toBe('/activity')
+    expect(hrefForScreen('safety')).toBe('/safety')
     expect(hrefForScreen('operator')).toBe('/operator')
   })
 
@@ -45,6 +46,7 @@ describe('URL-backed app routes', () => {
   test('parses static routes and safely falls back for unknown paths', () => {
     expect(routeFromLocation({ pathname: '/indexes/', search: '' })).toEqual({ screen: 'discover' })
     expect(routeFromLocation({ pathname: '/activity', search: '' })).toEqual({ screen: 'activity' })
+    expect(routeFromLocation({ pathname: '/safety', search: '' })).toEqual({ screen: 'safety' })
     expect(routeFromLocation({ pathname: '/not-a-page', search: '' })).toEqual({ screen: 'landing' })
   })
 })

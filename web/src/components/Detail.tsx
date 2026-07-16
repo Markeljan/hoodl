@@ -4,6 +4,7 @@ import type { IndexView, Tab } from '../model'
 import { hrefForIndex, hrefForScreen } from '../routes'
 import AppLink from './AppLink'
 import MetadataViewer from './MetadataViewer'
+import IndexSafetyNotice from './IndexSafetyNotice'
 
 export interface BasketLine {
   sym: string
@@ -138,6 +139,7 @@ function Capability({ title, sub }: { title: string; sub: string }) {
 export default function Detail(p: DetailProps) {
   const { sel, tab } = p
   const tabs: Tab[] = ['buy', 'mint', 'redeem', 'sell']
+  const containsStockTokens = sel.rows.some((row) => row.kind === 'Stock token')
   return (
     <main className="page page--detail">
       <AppLink
@@ -328,6 +330,7 @@ export default function Detail(p: DetailProps) {
             boxShadow: 'var(--shadow)',
           }}
         >
+          <IndexSafetyNotice containsStockTokens={containsStockTokens} />
           <div style={{ display: 'flex', gap: 3, padding: 4, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 18 }}>
             {tabs.map((t) => (
               <AppLink

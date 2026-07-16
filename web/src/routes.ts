@@ -9,6 +9,7 @@ export type AppRoute =
   | { screen: 'portfolio' }
   | { screen: 'creator' }
   | { screen: 'activity' }
+  | { screen: 'safety' }
   | { screen: 'operator' }
   | { screen: 'detail'; indexId: string; tab: Tab }
 
@@ -45,6 +46,8 @@ export function routeForScreen(screen: StaticScreen): AppRoute {
       return { screen: 'creator' }
     case 'activity':
       return { screen: 'activity' }
+    case 'safety':
+      return { screen: 'safety' }
     case 'operator':
       return { screen: 'operator' }
   }
@@ -64,6 +67,8 @@ export function hrefForScreen(screen: StaticScreen): string {
       return '/manage'
     case 'activity':
       return '/activity'
+    case 'safety':
+      return '/safety'
     case 'operator':
       return '/operator'
   }
@@ -99,6 +104,8 @@ export function routeFromLocation(location: LocationLike): AppRoute {
       return { screen: 'creator' }
     case 'activity':
       return { screen: 'activity' }
+    case 'safety':
+      return { screen: 'safety' }
     case 'operator':
       return { screen: 'operator' }
     default:

@@ -9,6 +9,7 @@
     "configure:hmeme": "bun --env-file=../.env scripts/configure-meme-index-periphery.ts",
     "launch:hmeme": "bun --env-file=../.env scripts/create-meme-index.ts",
     "lint": "oxlint",
+    "snapshot:growth": "bun scripts/growth-snapshot.ts",
     "test": "bun test",
     "verify:hmeme": "bun scripts/verify-meme-index.ts",
     "preview": "vite preview"

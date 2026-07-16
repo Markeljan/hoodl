@@ -1,5 +1,7 @@
 # HOODL — Master Document
 
+> Product positioning and reference facts live here. The canonical forward engineering plan and TODO tracker is [`ROADMAP.md`](ROADMAP.md).
+
 *The single source of truth for product, positioning, pitch, landing page, and AI context.*
 *Last updated: 2026-07-12 (morning of pitch day, Arbitrum Open House London).*
 *Supersedes PRODUCT_CANVAS.md, CANVAS_SHORT.md, and BUILD_BRIEF.md where they conflict — notably the fee model (now protocol + creator fees, not "10 bps mint only") and deployment status (now live on mainnet).*

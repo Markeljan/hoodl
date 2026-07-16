@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { track } from '@vercel/analytics/react'
 import { getAddress } from 'viem'
+import { analyticsProperties, publicIndexIdentifier } from './analytics'
+import type { AnalyticsContext, FailureStage, ProtocolActionKind, WalletActionKind } from './analytics'
 import { addresses, explorerUrl } from './contracts'
 import { amountLabel, mulDivCeil, mulDivFloor, netShares, parseAmount, parseAmountOrZero, shortAddress, usdRawLabel } from './model'
 import type { Tab } from './model'
@@ -20,6 +22,7 @@ import Activity from './components/Activity'
 import Operator from './components/Operator'
 import Footer from './components/Footer'
 import Toast from './components/Toast'
+import Safety from './components/Safety'
 
 const SHARE_UNIT = 10n ** 18n
 
@@ -62,6 +65,8 @@ function titleForScreen(screen: StaticScreen): string {
       return 'Manage indexes | HOODL'
     case 'activity':
       return 'Protocol activity | HOODL'
+    case 'safety':
+      return 'Safety and eligibility | HOODL'
     case 'operator':
       return 'Operator console | HOODL'
   }
@@ -85,17 +90,24 @@ export default function App() {
   const screen = route.screen
   const selId = route.screen === 'detail' ? route.indexId : null
   const tab = route.screen === 'detail' ? route.tab : 'buy'
+  const routeTab = route.screen === 'detail' ? route.tab : undefined
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
   const sel = selId == null ? null : (hoodl.indexes.find((index) => index.id === selId) ?? null)
+  const selectedSymbol = sel?.symbol ?? null
   const hai = hoodl.indexes.find((index) => index.address.toLowerCase() === addresses.hai.toLowerCase()) ?? null
 
   useEffect(() => {
-    track('Screen Viewed', { screen })
-  }, [screen])
+    track('Screen Viewed', {
+      index_id: route.screen === 'detail' ? publicIndexIdentifier(selId ?? undefined) : null,
+      index_symbol: selectedSymbol,
+      screen,
+      tab: routeTab ?? null,
+    })
+  }, [route.screen, routeTab, screen, selId, selectedSymbol])
 
   useEffect(() => {
     document.title = screen === 'detail' ? (sel ? `${sel.symbol} · ${sel.name} | HOODL` : 'Index | HOODL') : titleForScreen(screen)
@@ -110,9 +122,14 @@ export default function App() {
   const copyShareLink = () => {
     if (!sel) return
     const url = new URL(hrefForIndex(sel.id, tab), window.location.origin).toString()
+    const context: AnalyticsContext = { actionKind: 'copy_index_link', index: sel, screen, tab }
     const copied = () => {
-      track('Index Link Copied', { action: tab })
+      track('Share Action', analyticsProperties(context, { success: true }))
       toast('Index link copied.')
+    }
+    const copyFailed = () => {
+      track('Share Action', analyticsProperties(context, { error: 'Clipboard unavailable', failureStage: 'clipboard', success: false }))
+      toast('Copy the URL from your address bar to share this index.')
     }
 
     if (copyTextFromUserGesture(url)) {
@@ -121,24 +138,35 @@ export default function App() {
     }
 
     if (!navigator.clipboard) {
-      toast('Copy the URL from your address bar to share this index.')
+      copyFailed()
       return
     }
 
-    void navigator.clipboard.writeText(url).then(copied).catch(() => toast('Copy the URL from your address bar to share this index.'))
+    void navigator.clipboard.writeText(url).then(copied).catch(copyFailed)
   }
 
-  const runAction = async (action: () => Promise<`0x${string}`>, success: string, after?: () => void) => {
+  const trackProtocolFailure = (context: AnalyticsContext, failureStage: FailureStage, error: unknown) => {
+    track('Protocol Action', analyticsProperties(context, { error, failureStage, success: false, transactionSuccess: failureStage === 'execution' ? false : null }))
+  }
+
+  const runAction = async (context: AnalyticsContext, action: () => Promise<`0x${string}`>, success: string, after?: () => void) => {
     try {
       const hash = await action()
-      track('Protocol Action Completed')
+      track('Protocol Action', analyticsProperties(context, { success: true, transactionSuccess: true }))
       toast(`${success} · ${shortAddress(hash, 10, 6)}`)
       after?.()
     } catch (error) {
-      track('Protocol Action Failed')
+      trackProtocolFailure(context, 'execution', error)
       toast(messageOf(error))
     }
   }
+
+  const protocolContext = (actionKind: ProtocolActionKind, index?: { address?: string; symbol: string }): AnalyticsContext => ({
+    actionKind,
+    index,
+    screen,
+    tab: routeTab,
+  })
 
   const go = (nextScreen: StaticScreen) => {
     navigate(routeForScreen(nextScreen))
@@ -207,21 +235,22 @@ export default function App() {
   }, [hoodl.indexes])
 
   const handleWallet = async () => {
+    const actionKind: WalletActionKind = hoodl.wrongNetwork ? 'switch_network' : hoodl.account ? 'disconnect' : 'connect'
+    const context = { actionKind, index: sel ?? undefined, screen, tab: routeTab }
     try {
       if (hoodl.wrongNetwork) {
         await hoodl.switchNetwork()
-        track('Wallet Network Switched')
         toast('Switched to Robinhood Chain.')
       } else if (hoodl.account) {
         await hoodl.disconnect()
-        track('Wallet Disconnected')
         toast('Wallet disconnected.')
       } else {
         const account = await hoodl.connect()
-        track('Wallet Connected')
         toast(`Connected ${shortAddress(account)}.`)
       }
+      track('Wallet Action', analyticsProperties(context, { success: true }))
     } catch (error) {
+      track('Wallet Action', analyticsProperties(context, { error, failureStage: 'wallet', success: false }))
       toast(messageOf(error))
     }
   }
@@ -294,7 +323,7 @@ export default function App() {
         <CreateIndex
           protocol={hoodl.protocolState}
           pendingAction={hoodl.pendingAction}
-          onCreate={(input) => void runAction(() => hoodl.createIndex(input), `Created ${input.symbol}`, () => go('discover'))}
+          onCreate={(input) => void runAction(protocolContext('create_index', { symbol: input.symbol }), () => hoodl.createIndex(input), `Created ${input.symbol}`, () => go('discover'))}
         />
       )}
       {screen === 'detail' && sel && (
@@ -317,10 +346,12 @@ export default function App() {
           buyFeeLabel={`${sel.fMintLabel} · ${usdRawLabel(buyFeeValueRaw)}`}
           buyMaxLabel={usdRawLabel(maxUsdgRaw)}
           onBuy={() => {
+            const context = protocolContext('buy_with_usdg', sel)
             try {
               const raw = parseAmount(usdgIn, 6)
-              void runAction(() => hoodl.buyWithUsdg(sel, raw), `Bought ${sel.symbol}`)
+              void runAction(context, () => hoodl.buyWithUsdg(sel, raw), `Bought ${sel.symbol}`)
             } catch (error) {
+              trackProtocolFailure(context, 'input', error)
               toast(messageOf(error))
             }
           }}
@@ -331,11 +362,13 @@ export default function App() {
           mintRecipient={mintRecipient}
           onMintRecipient={setMintRecipient}
           onMint={() => {
+            const context = protocolContext('mint_in_kind', sel)
             try {
               const raw = parseAmount(mintShares, 18)
               const recipient = mintRecipient.trim() ? getAddress(mintRecipient.trim()) : undefined
-              void runAction(() => hoodl.mintInKind(sel, raw, recipient), `Minted ${sel.symbol}`)
+              void runAction(context, () => hoodl.mintInKind(sel, raw, recipient), `Minted ${sel.symbol}`)
             } catch (error) {
+              trackProtocolFailure(context, 'input', error)
               toast(messageOf(error))
             }
           }}
@@ -347,11 +380,13 @@ export default function App() {
           redeemRecipient={redeemRecipient}
           onRedeemRecipient={setRedeemRecipient}
           onRedeem={() => {
+            const context = protocolContext('redeem_in_kind', sel)
             try {
               const raw = parseAmount(redeemShares, 18)
               const recipient = redeemRecipient.trim() ? getAddress(redeemRecipient.trim()) : undefined
-              void runAction(() => hoodl.redeemInKind(sel, raw, recipient), `Redeemed ${sel.symbol}`)
+              void runAction(context, () => hoodl.redeemInKind(sel, raw, recipient), `Redeemed ${sel.symbol}`)
             } catch (error) {
+              trackProtocolFailure(context, 'input', error)
               toast(messageOf(error))
             }
           }}
@@ -363,6 +398,7 @@ export default function App() {
           onSellSlippage={setSellSlippage}
           sellQuoting={sellQuoting}
           onSellQuote={() => {
+            const context = protocolContext('quote_zap_redeem', sel)
             try {
               const shares = parseAmount(sellShares, 18)
               setSellQuoting(true)
@@ -370,20 +406,27 @@ export default function App() {
                 .quoteZapRedeem(sel, shares)
                 .then((amount) => {
                   setSellQuote({ indexId: sel.id, shares, amount })
+                  track('Protocol Action', analyticsProperties(context, { success: true }))
                   toast('Executable V4 quote refreshed.')
                 })
-                .catch((error) => toast(messageOf(error)))
+                .catch((error) => {
+                  track('Protocol Action', analyticsProperties(context, { error, failureStage: 'quote', success: false }))
+                  toast(messageOf(error))
+                })
                 .finally(() => setSellQuoting(false))
             } catch (error) {
+              track('Protocol Action', analyticsProperties(context, { error, failureStage: 'input', success: false }))
               toast(messageOf(error))
             }
           }}
           onSell={() => {
+            const context = protocolContext('sell_to_usdg', sel)
             try {
               const shares = parseAmount(sellShares, 18)
               if (!sellQuote || sellQuote.indexId !== sel.id || sellQuote.shares !== shares || sellMinRaw == null) throw new Error('Refresh the executable quote before selling.')
-              void runAction(() => hoodl.redeemToUsdg(sel, shares, sellMinRaw), `Sold ${sel.symbol}`)
+              void runAction(context, () => hoodl.redeemToUsdg(sel, shares, sellMinRaw), `Sold ${sel.symbol}`)
             } catch (error) {
+              trackProtocolFailure(context, 'input', error)
               toast(messageOf(error))
             }
           }}
@@ -403,7 +446,7 @@ export default function App() {
           onTrade={(index, nextTab) => openTrade(index.id, nextTab)}
           pendingAction={hoodl.pendingAction}
           lastTxUrl={lastTxUrl}
-          onTransfer={(index, recipient, amount) => void runAction(() => hoodl.transferIndex(index, recipient, amount), `Transferred ${index.symbol}`)}
+          onTransfer={(index, recipient, amount) => void runAction(protocolContext('transfer_index', index), () => hoodl.transferIndex(index, recipient, amount), `Transferred ${index.symbol}`)}
         />
       )}
       {screen === 'creator' && (
@@ -414,24 +457,25 @@ export default function App() {
           activity={hoodl.activity}
           pendingAction={hoodl.pendingAction}
           onConnect={() => void handleWallet()}
-          onMetadata={(index, description, imageURI) => void runAction(() => hoodl.updateMetadata(index, description, imageURI), `Updated ${index.symbol}`)}
-          onCreator={(index, creator) => void runAction(() => hoodl.updateCreator(index, creator), `Transferred ${index.symbol} creator role`, () => go('discover'))}
+          onMetadata={(index, description, imageURI) => void runAction(protocolContext('update_metadata', index), () => hoodl.updateMetadata(index, description, imageURI), `Updated ${index.symbol}`)}
+          onCreator={(index, creator) => void runAction(protocolContext('transfer_creator_role', index), () => hoodl.updateCreator(index, creator), `Transferred ${index.symbol} creator role`, () => go('discover'))}
         />
       )}
       {screen === 'activity' && <Activity activity={hoodl.activity} error={hoodl.activityError} />}
+      {screen === 'safety' && <Safety />}
       {screen === 'operator' && (
         <Operator
           account={hoodl.account}
           protocol={hoodl.protocolState}
           pendingAction={hoodl.pendingAction}
           onConnect={() => void handleWallet()}
-          onFees={(mintBps, redeemBps) => void runAction(() => hoodl.setProtocolFees(mintBps, redeemBps), 'Updated future protocol fees')}
-          onTreasury={(treasury) => void runAction(() => hoodl.setTreasury(treasury), 'Updated protocol treasury')}
-          onLens={(token, config) => void runAction(() => hoodl.setLensConfig(token, config), 'Updated Lens source')}
-          onSequencer={(feed, grace) => void runAction(() => hoodl.setSequencer(feed, grace), 'Updated sequencer guard')}
-          onZap={(token, pool) => void runAction(() => hoodl.setZapPool(token, pool), 'Updated Zap route')}
-          onTransferOwnership={(contract, owner) => void runAction(() => hoodl.transferContractOwnership(contract, owner), `Transferred ${contract} ownership`, () => go('landing'))}
-          onRenounce={(contract) => void runAction(() => hoodl.renounceContractOwnership(contract), `Renounced ${contract} ownership`, () => go('landing'))}
+          onFees={(mintBps, redeemBps) => void runAction(protocolContext('set_protocol_fees'), () => hoodl.setProtocolFees(mintBps, redeemBps), 'Updated future protocol fees')}
+          onTreasury={(treasury) => void runAction(protocolContext('set_treasury'), () => hoodl.setTreasury(treasury), 'Updated protocol treasury')}
+          onLens={(token, config) => void runAction(protocolContext('set_lens_config'), () => hoodl.setLensConfig(token, config), 'Updated Lens source')}
+          onSequencer={(feed, grace) => void runAction(protocolContext('set_sequencer_guard'), () => hoodl.setSequencer(feed, grace), 'Updated sequencer guard')}
+          onZap={(token, pool) => void runAction(protocolContext('set_zap_pool'), () => hoodl.setZapPool(token, pool), 'Updated Zap route')}
+          onTransferOwnership={(contract, owner) => void runAction(protocolContext('transfer_contract_ownership'), () => hoodl.transferContractOwnership(contract, owner), `Transferred ${contract} ownership`, () => go('landing'))}
+          onRenounce={(contract) => void runAction(protocolContext('renounce_contract_ownership'), () => hoodl.renounceContractOwnership(contract), `Renounced ${contract} ownership`, () => go('landing'))}
         />
       )}
 

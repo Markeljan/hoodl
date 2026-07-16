@@ -1,7 +1,7 @@
 import { formatUnits, parseUnits } from 'viem'
 import type { Address } from 'viem'
 
-export type Screen = 'landing' | 'discover' | 'create' | 'detail' | 'portfolio' | 'creator' | 'activity' | 'operator'
+export type Screen = 'landing' | 'discover' | 'create' | 'detail' | 'portfolio' | 'creator' | 'activity' | 'safety' | 'operator'
 export type Tab = 'buy' | 'mint' | 'redeem' | 'sell'
 
 export type LensSource = 'USDG' | 'CHAINLINK' | 'POOL_USDG' | 'NONE'
@@ -104,6 +104,7 @@ const TOKEN_COLORS: Record<string, string> = {
 }
 
 const MEMECOIN_SYMBOLS = new Set(['CASHCAT', 'ARROW', 'HOODRAT', 'WISHBONE', 'HOODIE'])
+const STOCK_TOKEN_SYMBOLS = new Set(['NVDA', 'TSLA'])
 
 export function tokenColor(symbol: string): string {
   return TOKEN_COLORS[symbol.toUpperCase()] ?? '#8b9aad'
@@ -113,7 +114,8 @@ export function tokenKind(symbol: string): string {
   const normalized = symbol.toUpperCase()
   if (MEMECOIN_SYMBOLS.has(normalized)) return 'Memecoin'
   if (normalized === 'USDG') return 'Stablecoin'
-  return 'Stock token'
+  if (STOCK_TOKEN_SYMBOLS.has(normalized)) return 'Stock token'
+  return 'Token'
 }
 
 export function shortAddress(address: string, left = 6, right = 4): string {

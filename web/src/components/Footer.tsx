@@ -18,9 +18,10 @@ export default function Footer() {
           {[
             ['Chain docs', 'https://docs.robinhood.com/chain/'],
             ['Contracts', `${explorerUrl}/address/${addresses.factory}`],
+            ['Safety', '/safety'],
             ['GitHub', 'https://github.com/Markeljan/hoodl'],
           ].map(([label, href]) => (
-            <a key={label} href={href} target="_blank" rel="noreferrer" className="hv-text" style={{ color: 'var(--text-2)' }}>
+            <a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} className="hv-text" style={{ color: 'var(--text-2)' }}>
               {label}
             </a>
           ))}

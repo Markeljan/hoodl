@@ -1,5 +1,7 @@
 # HOODL — permissionless index tokens on Robinhood Chain
 
+Execution priorities, acceptance criteria, KPIs, and iteration history live in [`ROADMAP.md`](ROADMAP.md).
+
 One ERC-20 that **is** a basket of tokenized stocks + crypto. Anyone creates an index; anyone mints it by depositing the exact basket **in-kind**; anyone redeems it back to the underlying, always, with no market required. No manager, no keeper, no oracle, no rebalancing — and the share is a standard ERC-20 you can transfer, LP, or post as collateral.
 
 Built with Foundry for Robinhood Chain (mainnet 4663 / testnet 46630) — the only chain where tokenized equities (NVDA, TSLA, …) and memecoins coexist as composable ERC-20s.
