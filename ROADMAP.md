@@ -161,7 +161,7 @@ These are product outcomes, not vanity metrics. “External” excludes the depl
 - [ ] **LR-005 — Publish reviewed product, eligibility, and risk disclosures.**
   **Status:** `IN PROGRESS`
   **Scope:** Clearly distinguish core redemption from periphery/DEX availability; explain immutable composition, fees, spot-price limitations, slippage, thin liquidity, stock-token restrictions, unaudited status, and that `$HOODL` is distinct from backed indexes.
-  **Current evidence:** `/safety`, `web/src/components/Safety.tsx`, and `IndexSafetyNotice.tsx` publish audit status, core/periphery limits, Stock Token eligibility language, official source links, and a notice on index transaction panels. Counsel review and jurisdiction enforcement remain.
+  **Current evidence:** `/safety`, `web/src/components/Safety.tsx`, and `IndexSafetyNotice.tsx` publish audit status, core/periphery limits, Stock Token eligibility language, official source links, and a notice on index transaction panels. Commit `dfb21ee` deployed successfully through Vercel on 2026-07-16; `https://hoodl.finance/safety` returned HTTP 200 and the production bundle contained the new safety and action-event strings. Counsel review and jurisdiction enforcement remain.
   **Evidence required:** Reviewed copy, source citations, and links from every transaction surface.
   **Acceptance:** Users see concise disclosures before material actions; claims match contracts and current external rules; legal questions are flagged for counsel rather than answered by engineering copy.
   **Dependencies:** Legal/compliance review for jurisdiction-specific language; SEC-003.
@@ -169,7 +169,7 @@ These are product outcomes, not vanity metrics. “External” excludes the depl
 - [ ] **LR-006 — Run a release-grade app and contract verification pass.**
   **Status:** `IN PROGRESS`
   **Scope:** Run web lint/test/build, Foundry tests, gated fork tests when RPC access is available, and browser checks at desktop and mobile widths. Validate all deployed-index read paths and simulate writes without broadcasting privileged changes.
-  **Current evidence:** On 2026-07-16, 22 Bun tests, web lint/build, 60 default Foundry tests, and `git diff --check` passed. The local `/safety` route rendered without browser warnings at desktop and 390px mobile widths. The local hAI detail route hit an HTTP RPC failure, so deployed-index reads, gated fork tests, and production transaction-panel verification remain open.
+  **Current evidence:** On 2026-07-16, 22 Bun tests, web lint/build, 60 default Foundry tests, and `git diff --check` passed for commit `dfb21ee`. The local `/safety` route rendered without browser warnings at desktop and 390px mobile widths. Vercel reported a successful production deployment and `https://hoodl.finance/safety` returned HTTP 200 with the expected production bundle. The local hAI detail route hit an HTTP RPC failure, so deployed-index reads, gated fork tests, and production transaction-panel verification remain open.
   **Evidence required:** Commands, results, browser matrix, and any waived checks with reason.
   **Acceptance:** Required checks pass; no console errors or horizontal overflow; live details, quotes, metadata, share routes, and failure states are verified.
   **Dependencies:** LR-003 through LR-005 for final release pass; funded wallets/RPC for optional live writes.
@@ -448,7 +448,7 @@ Append one row per coherent implementation, validation, decision, or external mi
 | Date | Iteration / task | Status change | Evidence | Decision / next step |
 |---|---|---|---|---|
 | 2026-07-16 | Roadmap baseline | Created `ROADMAP.md`; BASE-001 through BASE-005 recorded as shipped; launch/distribution/security gaps converted into acceptance-tested tasks | Current repo, `deployments/robinhood-mainnet.json`, `deployments/robinhood-meme-index.json`, `FEATURE_PARITY.md`, web and contract sources | Start with LR-001, LR-002, and DIST-001; keep mainnet transactions behind explicit task gates |
-| 2026-07-16 | Iteration 1 foundation | LR-001, LR-002, LR-005, LR-006, and SEC-003 moved to `IN PROGRESS`; LR-004 moved to `NEXT` | Bun growth snapshot + parser tests; typed analytics + privacy tests; `/safety` route and transaction-panel notice; 22 Bun tests, web lint/build, 60 default Foundry tests, and desktop/mobile browser checks; WalletConnect architecture audit | Push to `main`; next isolate the Reown WalletConnect slice, then live-verify deployed-index reads and production analytics |
+| 2026-07-16 | Iteration 1 foundation | LR-001, LR-002, LR-005, LR-006, and SEC-003 moved to `IN PROGRESS`; LR-004 moved to `NEXT` | Commit `dfb21ee`; Bun growth snapshot + parser tests; typed analytics + privacy tests; `/safety` route and transaction-panel notice; 22 Bun tests, web lint/build, 60 default Foundry tests, and desktop/mobile browser checks; successful Vercel deployment and production `/safety` HTTP 200; WalletConnect architecture audit | Next isolate the Reown WalletConnect slice, then live-verify deployed-index reads and production analytics |
 
 ## Definition of done for every iteration
 
